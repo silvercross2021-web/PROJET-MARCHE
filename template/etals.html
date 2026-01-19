@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Étals - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html" class="active">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Gestion des Étals</h1>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-icon">🏪</div>
+                <div class="summary-value">10</div>
+                <div class="summary-label">Total Étals</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon" style="color: var(--danger-red);">🏪</div>
+                <div class="summary-value">5</div>
+                <div class="summary-label">Étals Occupés</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon" style="color: var(--success-green);">🏪</div>
+                <div class="summary-value">5</div>
+                <div class="summary-label">Étals Libres</div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="filters-section">
+            <div class="search-input-wrapper" style="flex: 1;">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Rechercher un étal..."
+                >
+            </div>
+            <button class="filter-btn active">Tous</button>
+            <button class="filter-btn">Libres</button>
+            <button class="filter-btn">Occupés</button>
+        </div>
+
+        <!-- Table -->
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>N° Étal</th>
+                        <th>Secteur</th>
+                        <th>Superficie</th>
+                        <th>Statut</th>
+                        <th>Commerçant</th>
+                        <th>Type Commerce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>A-001</td>
+                        <td>Secteur A</td>
+                        <td>12 m²</td>
+                        <td><span class="status-badge occupied">Occupé</span></td>
+                        <td>Kouassi Adjoua</td>
+                        <td>Fruits et Légumes</td>
+                    </tr>
+                    <tr>
+                        <td>A-002</td>
+                        <td>Secteur A</td>
+                        <td>10 m²</td>
+                        <td><span class="status-badge free">Libre</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>A-003</td>
+                        <td>Secteur A</td>
+                        <td>8 m²</td>
+                        <td><span class="status-badge occupied">Occupé</span></td>
+                        <td>Yao Marie</td>
+                        <td>Épices</td>
+                    </tr>
+                    <tr>
+                        <td>B-001</td>
+                        <td>Secteur B</td>
+                        <td>15 m²</td>
+                        <td><span class="status-badge occupied">Occupé</span></td>
+                        <td>Bamba Seydou</td>
+                        <td>Poisson Frais</td>
+                    </tr>
+                    <tr>
+                        <td>B-002</td>
+                        <td>Secteur B</td>
+                        <td>15 m²</td>
+                        <td><span class="status-badge free">Libre</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>C-001</td>
+                        <td>Secteur C</td>
+                        <td>20 m²</td>
+                        <td><span class="status-badge occupied">Occupé</span></td>
+                        <td>Traoré Fatou</td>
+                        <td>Viande</td>
+                    </tr>
+                    <tr>
+                        <td>C-002</td>
+                        <td>Secteur C</td>
+                        <td>18 m²</td>
+                        <td><span class="status-badge free">Libre</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>D-001</td>
+                        <td>Secteur D</td>
+                        <td>25 m²</td>
+                        <td><span class="status-badge occupied">Occupé</span></td>
+                        <td>Koné Ibrahim</td>
+                        <td>Textile</td>
+                    </tr>
+                    <tr>
+                        <td>D-002</td>
+                        <td>Secteur D</td>
+                        <td>22 m²</td>
+                        <td><span class="status-badge free">Libre</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td>A-004</td>
+                        <td>Secteur A</td>
+                        <td>12 m²</td>
+                        <td><span class="status-badge free">Libre</span></td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
+

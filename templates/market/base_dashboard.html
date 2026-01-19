@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}e-Marché | Mairie de Treichville{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">
+            <span>→</span> Déconnexion
+        </a>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="{% url 'dashboard' %}" {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="{% url 'commercants' %}" {% if request.resolver_match.url_name == 'commercants' %}class="active"{% endif %}>
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="{% url 'etals' %}" {% if request.resolver_match.url_name == 'etals' %}class="active"{% endif %}>
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="{% url 'tickets' %}" {% if request.resolver_match.url_name == 'tickets' %}class="active"{% endif %}>
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                {% if can_manage_collecteurs_ui %}
+                <li><a href="{% url 'collecteurs' %}" {% if request.resolver_match.url_name == 'collecteurs' %}class="active"{% endif %}>
+                    <span class="icon">🧾</span>
+                    <span>Collecteurs</span>
+                </a></li>
+                <li><a href="{% url 'lots_tickets' %}" {% if request.resolver_match.url_name == 'lots_tickets' %}class="active"{% endif %}>
+                    <span class="icon">📚</span>
+                    <span>Lots de Tickets</span>
+                </a></li>
+                <li><a href="{% url 'rapports_collecteurs' %}" {% if request.resolver_match.url_name == 'rapports_collecteurs' %}class="active"{% endif %}>
+                    <span class="icon">📊</span>
+                    <span>Rapports Collecteurs</span>
+                </a></li>
+                {% endif %}
+                <li><a href="{% url 'paiements' %}" {% if request.resolver_match.url_name == 'paiements' %}class="active"{% endif %}>
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="{% url 'rapports' %}" {% if request.resolver_match.url_name == 'rapports' %}class="active"{% endif %}>
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div style="background: #F56565; color: white; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div style="background: #48BB78; color: white; padding: 12px; border-radius: 4px; margin-bottom: 20px;">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
+
+

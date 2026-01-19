@@ -1,0 +1,164 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Reçu de Paiement - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="receipt-container">
+    <div class="receipt">
+        <div class="receipt-header">
+            <h1>MAIRIE DE TREICHVILLE</h1>
+            <h2>e-Marché</h2>
+            <p>Reçu de Paiement</p>
+        </div>
+        
+        <div class="receipt-body">
+            <div class="receipt-info">
+                <div class="info-row">
+                    <span class="label">N° Reçu:</span>
+                    <span class="value">#{{ paiement.id|stringformat:"06d" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ paiement.date_paiement|date:"d/m/Y à H:i" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Commerçant:</span>
+                    <span class="value">{{ paiement.commercant.nom_complet }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Contact:</span>
+                    <span class="value">{{ paiement.commercant.contact }}</span>
+                </div>
+                {% if paiement.etal %}
+                <div class="info-row">
+                    <span class="label">Étal:</span>
+                    <span class="value">{{ paiement.etal.numero }} - {{ paiement.etal.secteur.nom }}</span>
+                </div>
+                {% endif %}
+                <div class="info-row">
+                    <span class="label">Mode de paiement:</span>
+                    <span class="value">{{ paiement.get_mode_paiement_display }}</span>
+                </div>
+                {% if paiement.ticket %}
+                <div class="info-row">
+                    <span class="label">N° Ticket:</span>
+                    <span class="value">{{ paiement.ticket.numero }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="receipt-amount">
+                <div class="amount-row">
+                    <span class="label">Montant payé:</span>
+                    <span class="value">{{ paiement.montant|floatformat:0 }} FCFA</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="receipt-footer">
+            <p>Merci pour votre paiement</p>
+            <p class="small">Ce reçu est valable comme justificatif de paiement</p>
+        </div>
+    </div>
+    
+    <div class="receipt-actions">
+        <button onclick="window.print()" class="btn btn-primary">Imprimer</button>
+        <a href="{% url 'paiements' %}" class="btn btn-secondary">Retour</a>
+    </div>
+</div>
+
+<style>
+.receipt-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.receipt {
+    background: white;
+    border: 2px solid #ddd;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.receipt-header {
+    text-align: center;
+    border-bottom: 2px solid #333;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.receipt-header h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #333;
+}
+
+.receipt-header h2 {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #666;
+}
+
+.receipt-body {
+    margin: 20px 0;
+}
+
+.receipt-info .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.receipt-info .label {
+    font-weight: bold;
+    color: #666;
+}
+
+.receipt-info .value {
+    color: #333;
+}
+
+.receipt-amount {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #333;
+}
+
+.amount-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.receipt-footer {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    color: #666;
+}
+
+.receipt-footer .small {
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+.receipt-actions {
+    text-align: center;
+}
+
+@media print {
+    .receipt-actions {
+        display: none;
+    }
+    .receipt {
+        border: none;
+    }
+}
+</style>
+{% endblock %}
+

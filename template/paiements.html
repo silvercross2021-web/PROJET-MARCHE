@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des Paiements - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html" class="active">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Saisie des Paiements</h1>
+
+        <div class="payment-container">
+            <!-- Left Panel - New Payment Form -->
+            <div class="payment-form-card">
+                <h2 class="card-title">Nouveau Paiement</h2>
+
+                <div class="form-group">
+                    <label>Rechercher Commerçant</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">🔍</span>
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            placeholder="Nom ou N° étal du commerçant"
+                        >
+                    </div>
+                </div>
+
+                <div class="merchant-selected">
+                    <div class="merchant-name">Kouassi Adjoua</div>
+                    <div class="merchant-details">Étal: A-045 | Type: Fruits et Légumes</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="montant">Montant (FCFA)</label>
+                    <input 
+                        type="number" 
+                        id="montant" 
+                        class="form-input" 
+                        value="5000"
+                        style="padding-left: 15px;"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Date et Heure</label>
+                    <div class="input-wrapper">
+                        <span class="input-icon">📅</span>
+                        <input 
+                            type="datetime-local" 
+                            id="date" 
+                            class="form-input"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ticket">N° Ticket</label>
+                    <input 
+                        type="text" 
+                        id="ticket" 
+                        class="form-input" 
+                        value="T-001234"
+                        style="padding-left: 15px;"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>Mode de Paiement</label>
+                    <div class="payment-methods">
+                        <button type="button" class="payment-method-btn active">
+                            <span>💵</span>
+                            <span>Espèces</span>
+                        </button>
+                        <button type="button" class="payment-method-btn">
+                            <span>📱</span>
+                            <span>Mobile Money</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-save">ENREGISTRER LE PAIEMENT</button>
+            </div>
+
+            <!-- Right Panel - Recent Payments -->
+            <div class="recent-payments-card">
+                <h2 class="card-title">Paiements Récents</h2>
+
+                <div class="search-bar">
+                    <div class="search-input-wrapper">
+                        <span class="search-icon">🔍</span>
+                        <input 
+                            type="text" 
+                            class="search-input" 
+                            placeholder="Rechercher un paiement..."
+                        >
+                    </div>
+                </div>
+
+                <div class="payments-list">
+                    <div class="payment-item">
+                        <div class="payment-date">2025-11-05 09:30</div>
+                        <div class="payment-ticket">Ticket: T-001234 | Espèces</div>
+                        <div class="payment-merchant">Koffi Jean</div>
+                        <div class="payment-amount">8000 FCFA</div>
+                    </div>
+
+                    <div class="payment-item">
+                        <div class="payment-date">2025-11-05 09:15</div>
+                        <div class="payment-ticket">Ticket: T-001233 | Mobile Money</div>
+                        <div class="payment-merchant">Traoré Fatou</div>
+                        <div class="payment-amount">8000 FCFA</div>
+                    </div>
+
+                    <div class="payment-item">
+                        <div class="payment-date">2025-11-05 09:00</div>
+                        <div class="payment-ticket">Ticket: T-001232 | Espèces</div>
+                        <div class="payment-merchant">Koné Ibrahim</div>
+                        <div class="payment-amount">12000 FCFA</div>
+                    </div>
+
+                    <div class="payment-item">
+                        <div class="payment-date">2025-11-05 08:45</div>
+                        <div class="payment-ticket">Ticket: T-001231 | Espèces</div>
+                        <div class="payment-merchant">Yao Marie</div>
+                        <div class="payment-amount">4500 FCFA</div>
+                    </div>
+
+                    <div class="payment-item">
+                        <div class="payment-date">2025-11-05 08:30</div>
+                        <div class="payment-ticket">Ticket: T-001230 | Mobile Money</div>
+                        <div class="payment-merchant">Bamba Seydou</div>
+                        <div class="payment-amount">7500 FCFA</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Summary -->
+        <div class="daily-summary">
+            <h2 class="card-title">Résumé du Jour</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-item-label">Total Collecté</div>
+                    <div class="summary-item-value">178 000 FCFA</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-label">Nombre de Paiements</div>
+                    <div class="summary-item-value">37</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-label">Espèces</div>
+                    <div class="summary-item-value">125 000 FCFA</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-item-label">Mobile Money</div>
+                    <div class="summary-item-value">53 000 FCFA</div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

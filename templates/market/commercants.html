@@ -1,0 +1,76 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Gestion des Commerçants - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Gestion des Commerçants</h1>
+    <a href="{% url 'commercant_create' %}" class="btn btn-primary">+ Nouveau Commerçant</a>
+</div>
+
+<div class="table-container">
+    <div class="search-bar">
+        <form method="get" action="{% url 'commercants' %}">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    name="search"
+                    placeholder="Rechercher un commerçant..."
+                    value="{{ search_query }}"
+                >
+            </div>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Type Commerce</th>
+                <th>N° Étal</th>
+                <th>État Paiement</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in commercants %}
+            <tr>
+                <td>{{ item.commercant.nom_complet }}</td>
+                <td>{{ item.commercant.contact }}</td>
+                <td>{{ item.commercant.type_commerce }}</td>
+                <td>
+                    {{ item.etals_occupees }}
+                </td>
+                <td>
+                    {% if item.etat_paiement == 'a_jour' %}
+                        <span class="status-badge success">À jour</span>
+                    {% elif item.etat_paiement == 'retard' %}
+                        <span class="status-badge danger">En retard</span>
+                    {% else %}
+                        <span class="status-badge info">En attente</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'commercant_detail' item.commercant.id %}" class="btn-icon" title="Voir détails">👁️</a>
+                        <a href="{% url 'commercant_update' item.commercant.id %}" class="btn-icon" title="Modifier">✏️</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-light);">
+                    Aucun commerçant trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+

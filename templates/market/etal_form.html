@@ -1,0 +1,46 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un Étal - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ action }} un Étal</h1>
+    <a href="{% url 'etals' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="numero">Numéro *</label>
+            <input type="text" id="numero" name="numero" class="form-input" value="{{ etal.numero|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="secteur_id">Secteur *</label>
+            <select id="secteur_id" name="secteur_id" class="form-input" required>
+                <option value="">-- Choisir un secteur --</option>
+                {% for s in secteurs %}
+                    <option value="{{ s.id }}" {% if etal and etal.secteur.id == s.id %}selected{% endif %}>{{ s.nom }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="superficie">Superficie (m²) *</label>
+            <input type="number" step="0.01" min="0.01" id="superficie" name="superficie" class="form-input" value="{{ etal.superficie|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label for="statut">Statut *</label>
+            <select id="statut" name="statut" class="form-input" required>
+                <option value="libre" {% if not etal or etal.statut == 'libre' %}selected{% endif %}>Libre</option>
+                <option value="occupe" {% if etal and etal.statut == 'occupe' %}selected{% endif %}>Occupé</option>
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            <a href="{% url 'etals' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

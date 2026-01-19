@@ -1,0 +1,132 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Gestion des Tickets - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Gestion des Tickets</h1>
+    <div class="page-actions">
+        <a href="{% url 'ticket_create' %}" class="btn btn-primary">+ Créer / Générer</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="search-bar">
+        <form method="get" action="{% url 'tickets' %}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <div class="search-input-wrapper" style="flex:1; min-width:220px;">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    name="search"
+                    placeholder="Rechercher un ticket..."
+                    value="{{ search_query }}"
+                >
+            </div>
+            <select name="statut" class="form-input" style="max-width:180px;">
+                <option value="tous" {% if filtre_statut == 'tous' %}selected{% endif %}>Tous</option>
+                <option value="disponible" {% if filtre_statut == 'disponible' %}selected{% endif %}>Disponible</option>
+                <option value="utilise" {% if filtre_statut == 'utilise' %}selected{% endif %}>Utilisé</option>
+                <option value="annule" {% if filtre_statut == 'annule' %}selected{% endif %}>Annulé</option>
+                <option value="perdu" {% if filtre_statut == 'perdu' %}selected{% endif %}>Perdu</option>
+            </select>
+            <input type="date" name="date_debut" class="form-input" value="{{ date_debut }}" style="max-width:170px;">
+            <input type="date" name="date_fin" class="form-input" value="{{ date_fin }}" style="max-width:170px;">
+            <select name="commercant" class="form-input" style="max-width:220px;">
+                <option value="">Tous commerçants</option>
+                {% for c in commercants_filter %}
+                    <option value="{{ c.id }}" {% if filtre_commercant == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nom_complet }}</option>
+                {% endfor %}
+            </select>
+            <select name="etal" class="form-input" style="max-width:200px;">
+                <option value="">Tous étals</option>
+                {% for e in etals_filter %}
+                    <option value="{{ e.id }}" {% if filtre_etal == e.id|stringformat:'s' %}selected{% endif %}>{{ e.numero }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{% url 'tickets' %}" class="btn btn-secondary">Réinitialiser</a>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>N° Ticket</th>
+                <th>Commerçant</th>
+                <th>N° Étal</th>
+                <th>Montant</th>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+            <tr>
+                <td><a href="{% url 'ticket_detail' ticket.id %}">{{ ticket.numero }}</a></td>
+                <td>
+                    {% with p=ticket.paiements.all|dictsortreversed:"date_paiement"|first %}
+                        {% if p %}{{ p.commercant.nom_complet }}{% else %}-{% endif %}
+                    {% endwith %}
+                    {% if ticket.paiements.count > 1 %}<span class="status-badge warning" style="margin-left:6px;">Multiple</span>{% endif %}
+                </td>
+                <td>
+                    {% with p=ticket.paiements.all|dictsortreversed:"date_paiement"|first %}
+                        {% if p and p.etal %}{{ p.etal.numero }}{% else %}-{% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% with p=ticket.paiements.all|dictsortreversed:"date_paiement"|first %}
+                        {% if p %}{{ p.montant|floatformat:0 }} FCFA{% else %}-{% endif %}
+                    {% endwith %}
+                </td>
+                <td>{{ ticket.date_creation|date:"Y-m-d" }}</td>
+                <td>
+                    {% if ticket.statut == 'utilise' %}
+                        <span class="status-badge success">Utilisé</span>
+                    {% elif ticket.statut == 'annule' %}
+                        <span class="status-badge danger">Annulé</span>
+                    {% elif ticket.statut == 'perdu' %}
+                        <span class="status-badge danger">Perdu</span>
+                    {% else %}
+                        <span class="status-badge warning">Disponible</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'ticket_detail' ticket.id %}" class="btn-small">Détails</a>
+                        <a href="{% url 'ticket_update' ticket.id %}" class="btn-small">Modifier</a>
+                        <form method="post" action="{% url 'ticket_delete' ticket.id %}" style="display:inline;" onsubmit="return confirm('Supprimer ce ticket ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-small btn-danger">Supprimer</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-light);">
+                    Aucun ticket trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj %}
+<div class="pagination" style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+    {% if page_obj.has_previous %}
+        <a class="btn-small" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if date_debut %}&date_debut={{ date_debut }}{% endif %}{% if date_fin %}&date_fin={{ date_fin }}{% endif %}">Précédent</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="btn-small" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if date_debut %}&date_debut={{ date_debut }}{% endif %}{% if date_fin %}&date_fin={{ date_fin }}{% endif %}">Suivant</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+

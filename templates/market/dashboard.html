@@ -1,0 +1,407 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Tableau de Bord - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="dashboard-header-section">
+    <div class="dashboard-title-section">
+        <h1 class="page-title">Tableau de Bord</h1>
+        <div class="breadcrumb">
+            <span>Accueil</span>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current">Dashboard</span>
+        </div>
+    </div>
+    <div class="dashboard-actions">
+        <div class="last-update">
+            <span class="update-icon">🕐</span>
+            <span>Mis à jour il y a <span id="last-update-time">0</span> min</span>
+        </div>
+        <button class="btn-refresh" onclick="refreshDashboard()" title="Actualiser">
+            <span class="refresh-icon">🔄</span>
+            Actualiser
+        </button>
+        <button class="btn-export-dashboard" onclick="exportDashboard()" title="Exporter">
+            <span>📥</span>
+            Exporter
+        </button>
+    </div>
+</div>
+
+<!-- Alertes -->
+{% if alertes %}
+<div class="alertes-section">
+    {% for alerte in alertes %}
+    <div class="alerte-card alerte-{{ alerte.type }}">
+        <div class="alerte-icon">
+            {% if alerte.type == 'danger' %}⚠️{% elif alerte.type == 'warning' %}⚡{% else %}ℹ️{% endif %}
+        </div>
+        <div class="alerte-content">
+            <div class="alerte-titre">{{ alerte.titre }}</div>
+            <div class="alerte-message">{{ alerte.message }}</div>
+        </div>
+        <div class="alerte-action">
+            <button class="btn-alerte-action">{{ alerte.action }}</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- KPI Cards -->
+<div class="stats-grid">
+    <!-- Card 1: Total Collecté Aujourd'hui -->
+    <div class="stat-card kpi-primary" onclick="openModal('modal-details-jour')">
+        <div class="stat-badge">Aujourd'hui</div>
+        <div class="stat-icon primary">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Collecté Aujourd'hui</div>
+            <div class="stat-value">{{ total_aujourdhui|floatformat:0 }} FCFA</div>
+            {% if comparaison_hier.pourcentage != 0 %}
+            <div class="stat-trend {% if comparaison_hier.pourcentage > 0 %}positive{% else %}negative{% endif %}">
+                <span class="trend-icon">{% if comparaison_hier.pourcentage > 0 %}↑{% else %}↓{% endif %}</span>
+                {{ comparaison_hier.pourcentage|floatformat:1 }}% vs Hier
+            </div>
+            {% endif %}
+        </div>
+        <div class="stat-hover-info">Cliquez pour voir les détails</div>
+    </div>
+
+    <!-- Card 2: Commerçants en Retard -->
+    <div class="stat-card kpi-danger {% if commercants_retard > 0 %}has-alert{% endif %}" onclick="openModal('modal-commercants-retard')">
+        {% if commercants_retard > 0 %}
+        <div class="stat-alert-badge">ALERTE</div>
+        {% endif %}
+        <div class="stat-icon danger">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Commerçants en Retard</div>
+            <div class="stat-value">{{ commercants_retard }}</div>
+            <div class="stat-context">commerçants</div>
+            {% if top_retards %}
+            <div class="stat-sublist">
+                {% for retard in top_retards|slice:":3" %}
+                <div class="sublist-item">{{ retard.commercant.nom_complet }}: {{ retard.total_retard|floatformat:0 }} FCFA</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="stat-hover-info">Cliquez pour voir la liste complète</div>
+    </div>
+
+    <!-- Card 3: Taux d'Occupation -->
+    <div class="stat-card kpi-success" onclick="window.location.href='{% url 'etals' %}?statut=occupe'">
+        <div class="stat-icon success">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Taux d'Occupation</div>
+            <div class="stat-value">{{ taux_occupation }}%</div>
+            <div class="stat-context">Sur {{ taux_data.total }} étals</div>
+            <div class="stat-details">
+                <span class="detail-item success">{{ taux_data.occupes }} occupés</span>
+                <span class="detail-item">/</span>
+                <span class="detail-item">{{ taux_data.libres }} libres</span>
+            </div>
+        </div>
+        <!-- Mini donut chart -->
+        <div class="mini-donut">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+                <circle cx="30" cy="30" r="25" fill="none" stroke="#E2E8F0" stroke-width="8"/>
+                <circle cx="30" cy="30" r="25" fill="none" stroke="#48BB78" stroke-width="8"
+                        stroke-dasharray="{% widthratio taux_data.occupes taux_data.total 157 %}, 157"
+                        stroke-dashoffset="39.25" transform="rotate(-90 30 30)"/>
+            </svg>
+        </div>
+        <div class="stat-hover-info">Cliquez pour voir les étals</div>
+    </div>
+
+    <!-- Card 4: Collecte Mensuelle -->
+    <div class="stat-card kpi-info" onclick="openModal('modal-evolution-mensuelle')">
+        <div class="stat-icon info">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Collecte Mensuelle</div>
+            <div class="stat-value">
+                {% if collecte_mensuelle >= 1000000 %}
+                    {{ collecte_mensuelle|floatformat:1 }}M
+                {% else %}
+                    {{ collecte_mensuelle|floatformat:0 }}K
+                {% endif %} FCFA
+            </div>
+            <div class="stat-context">Mois en cours</div>
+            {% if comparaison_mois.pourcentage != 0 %}
+            <div class="stat-trend {% if comparaison_mois.pourcentage > 0 %}positive{% else %}negative{% endif %}">
+                <span class="trend-icon">{% if comparaison_mois.pourcentage > 0 %}↑{% else %}↓{% endif %}</span>
+                {{ comparaison_mois.pourcentage|floatformat:1 }}% vs Mois précédent
+            </div>
+            {% endif %}
+        </div>
+        <div class="stat-hover-info">Cliquez pour voir l'évolution</div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+    <!-- Chart 1: Collection Journalière -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">Collection Journalière</h3>
+            <div class="chart-period">7 derniers jours</div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-y-axis-bars">
+                {% with max_val=collection_journaliere.max_value %}
+                    {% if max_val > 0 %}
+                        {% if max_val >= 1000 %}
+                            <span>{{ max_val|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 4 3 as val_3_4 %}
+                            <span>{{ val_3_4|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 2 1 as val_1_2 %}
+                            <span>{{ val_1_2|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 4 1 as val_1_4 %}
+                            <span>{{ val_1_4|floatformat:0|slice:":-3" }}K</span>
+                        {% else %}
+                            <span>{{ max_val|floatformat:0 }}</span>
+                            {% widthratio max_val 4 3 as val_3_4 %}
+                            <span>{{ val_3_4|floatformat:0 }}</span>
+                            {% widthratio max_val 2 1 as val_1_2 %}
+                            <span>{{ val_1_2|floatformat:0 }}</span>
+                            {% widthratio max_val 4 1 as val_1_4 %}
+                            <span>{{ val_1_4|floatformat:0 }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span>200K</span>
+                        <span>150K</span>
+                        <span>100K</span>
+                        <span>50K</span>
+                    {% endif %}
+                {% endwith %}
+                <span>0</span>
+            </div>
+            <div class="chart-bars">
+                {% for jour in collection_journaliere.jours %}
+                    {% with max_value=collection_journaliere.max_value %}
+                        {% if max_value > 0 %}
+                            {% widthratio jour.total max_value 100 as height %}
+                        {% else %}
+                            {% with height=5 %}{% endwith %}
+                        {% endif %}
+                        <div class="chart-bar" 
+                             data-date="{{ jour.date|date:'d/m/Y' }}"
+                             data-value="{{ jour.total|floatformat:0 }}"
+                             style="height: {% if jour.total > 0 %}{{ height }}{% else %}5{% endif %}%; min-height: 5px;"
+                             onclick="showDayDetails('{{ jour.date|date:'Y-m-d' }}', {{ jour.total|floatformat:0 }})">
+                            <div class="chart-bar-tooltip">
+                                <div class="tooltip-date">{{ jour.date|date:"d/m/Y" }}</div>
+                                <div class="tooltip-value">{{ jour.total|floatformat:0 }} FCFA</div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+            <div class="chart-labels">
+                {% for jour in collection_journaliere.jours %}
+                    <span title="{{ jour.date|date:'d/m/Y' }}">{{ jour.jour_semaine }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="chart-footer">
+            <div class="chart-stat">
+                <span class="stat-label">Moyenne:</span>
+                <span class="stat-value">{{ collection_journaliere.moyenne|floatformat:0 }} FCFA</span>
+            </div>
+            <div class="chart-stat">
+                <span class="stat-label">Meilleur jour:</span>
+                <span class="stat-value">{{ collection_journaliere.meilleur_jour.date|date:"d/m" }} ({{ collection_journaliere.meilleur_jour.total|floatformat:0 }} FCFA)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Évolution Mensuelle -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">Évolution Mensuelle</h3>
+            <div class="chart-period">6 derniers mois</div>
+        </div>
+        <div class="chart-container">
+            <div class="chart-line">
+                <div class="chart-y-axis">
+                    {% with max_val=evolution_mensuelle.max_value %}
+                        {% if max_val >= 1000000 %}
+                            <span>{{ max_val|floatformat:1 }}M</span>
+                            {% widthratio max_val 4 3 as val_3_4 %}
+                            <span>{{ val_3_4|floatformat:1 }}M</span>
+                            {% widthratio max_val 2 1 as val_1_2 %}
+                            <span>{{ val_1_2|floatformat:1 }}M</span>
+                            {% widthratio max_val 4 1 as val_1_4 %}
+                            <span>{{ val_1_4|floatformat:1 }}M</span>
+                        {% elif max_val >= 1000 %}
+                            <span>{{ max_val|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 4 3 as val_3_4 %}
+                            <span>{{ val_3_4|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 2 1 as val_1_2 %}
+                            <span>{{ val_1_2|floatformat:0|slice:":-3" }}K</span>
+                            {% widthratio max_val 4 1 as val_1_4 %}
+                            <span>{{ val_1_4|floatformat:0|slice:":-3" }}K</span>
+                        {% else %}
+                            <span>{{ max_val|floatformat:0 }}</span>
+                            {% widthratio max_val 4 3 as val_3_4 %}
+                            <span>{{ val_3_4|floatformat:0 }}</span>
+                            {% widthratio max_val 2 1 as val_1_2 %}
+                            <span>{{ val_1_2|floatformat:0 }}</span>
+                            {% widthratio max_val 4 1 as val_1_4 %}
+                            <span>{{ val_1_4|floatformat:0 }}</span>
+                        {% endif %}
+                    {% endwith %}
+                    <span>0</span>
+                </div>
+                <svg width="calc(100% - 50px)" height="220" style="position: absolute; top: 0; left: 50px;" class="line-chart-svg">
+                    <defs>
+                        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#E53E3E;stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:#E53E3E;stop-opacity:0" />
+                        </linearGradient>
+                    </defs>
+                    {% if evolution_mensuelle.mois|length > 1 %}
+                    {% if evolution_mensuelle.mois|length > 1 %}
+                    {% with total_mois=evolution_mensuelle.mois|length %}
+                    <polyline
+                        points="{% for mois in evolution_mensuelle.mois %}{% widthratio forloop.counter0|add:"-1" total_mois|add:"-1" 100 %}%,{% widthratio mois.pourcentage 100 180|add:"40" %}{% if not forloop.last %} {% endif %}{% endfor %}"
+                        fill="url(#lineGradient)"
+                        stroke="none"
+                    />
+                    <polyline
+                        points="{% for mois in evolution_mensuelle.mois %}{% widthratio forloop.counter0|add:"-1" total_mois|add:"-1" 100 %}%,{% widthratio mois.pourcentage 100 180|add:"40" %}{% if not forloop.last %} {% endif %}{% endfor %}"
+                        fill="none"
+                        stroke="#E53E3E"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="line-path"
+                    />
+                    {% for mois in evolution_mensuelle.mois %}
+                    <circle 
+                        cx="{% widthratio forloop.counter0|add:"-1" total_mois|add:"-1" 100 %}%" 
+                        cy="{% widthratio mois.pourcentage 100 180|add:"40" %}" 
+                        r="4" 
+                        fill="#E53E3E"
+                        class="line-point"
+                        data-month="{{ mois.nom_mois }}"
+                        data-value="{{ mois.total|floatformat:0 }}"
+                        onclick="showMonthDetails('{{ mois.nom_mois }} {{ mois.annee }}', {{ mois.total|floatformat:0 }})"
+                    />
+                    {% endfor %}
+                    {% endwith %}
+                    {% endif %}
+                    {% endif %}
+                </svg>
+            </div>
+            <div class="chart-x-axis">
+                {% for mois in evolution_mensuelle.mois %}
+                    <span title="{{ mois.nom_mois }} {{ mois.annee }}">{{ mois.nom_court }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="chart-footer">
+            <div class="chart-stat">
+                <span class="stat-label">Moyenne:</span>
+                <span class="stat-value">
+                    {% if evolution_mensuelle.moyenne >= 1000000 %}
+                        {{ evolution_mensuelle.moyenne|floatformat:1 }}M FCFA
+                    {% else %}
+                        {{ evolution_mensuelle.moyenne|floatformat:0 }}K FCFA
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tickets Section -->
+<div class="tickets-section">
+    <h3 class="section-title">Statut des Tickets</h3>
+    <div class="tickets-grid">
+        <div class="ticket-card" onclick="window.location.href='{% url 'tickets' %}?filter=utilises'">
+            <div class="ticket-value">{{ tickets_utilises|floatformat:0 }}</div>
+            <div class="progress-bar">
+                {% widthratio tickets_utilises total_carnets 100 as percent_used %}
+                <div class="progress-fill grey" style="width: {{ percent_used }}%;"></div>
+            </div>
+            <div class="summary-label">Tickets Utilisés</div>
+            <div class="ticket-percentage">{{ percent_used }}%</div>
+        </div>
+
+        <div class="ticket-card" onclick="window.location.href='{% url 'tickets' %}?filter=restants'">
+            <div class="ticket-value">{{ tickets_restants|floatformat:0 }}</div>
+            <div class="progress-bar">
+                {% widthratio tickets_restants total_carnets 100 as percent_remaining %}
+                <div class="progress-fill red" style="width: {{ percent_remaining }}%;"></div>
+            </div>
+            <div class="summary-label">Tickets Restants</div>
+            <div class="ticket-percentage">{{ percent_remaining }}%</div>
+        </div>
+
+        <div class="ticket-card" onclick="window.location.href='{% url 'tickets' %}'">
+            <div class="ticket-value">{{ total_carnets|floatformat:0 }}</div>
+            <div class="progress-bar">
+                <div class="progress-fill blue" style="width: 100%;"></div>
+            </div>
+            <div class="summary-label">Total Carnets</div>
+            <div class="ticket-percentage">100%</div>
+        </div>
+    </div>
+</div>
+
+<!-- Activités Récentes -->
+{% if activites %}
+<div class="activites-section">
+    <h3 class="section-title">Activités Récentes</h3>
+    <div class="activites-list">
+        {% for activite in activites %}
+        <div class="activite-item">
+            <div class="activite-icon">{{ activite.icone }}</div>
+            <div class="activite-content">
+                <div class="activite-titre">{{ activite.titre }}</div>
+                <div class="activite-description">{{ activite.description }}</div>
+            </div>
+            <div class="activite-temps">{{ activite.temps }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Modales -->
+{% include 'market/modals/dashboard_modals.html' %}
+
+<!-- JavaScript -->
+<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+    // Initialiser le timer de mise à jour
+    let lastUpdate = new Date('{{ derniere_mise_a_jour|date:"c" }}');
+    setInterval(function() {
+        let now = new Date();
+        let diff = Math.floor((now - lastUpdate) / 60000);
+        document.getElementById('last-update-time').textContent = diff;
+    }, 60000);
+</script>
+{% endblock %}

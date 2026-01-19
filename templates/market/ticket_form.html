@@ -1,0 +1,49 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un Ticket - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ action }} un Ticket</h1>
+    <a href="{% url 'tickets' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="form">
+        {% csrf_token %}
+        {% if action == 'Créer' %}
+        <div class="form-group">
+            <label for="quantite">Quantité (1-1000)</label>
+            <input type="number" id="quantite" name="quantite" class="form-input" min="1" max="1000" value="1">
+        </div>
+        <div class="form-group">
+            <label for="numero">Numéro (optionnel, sinon auto)</label>
+            <input type="text" id="numero" name="numero" class="form-input" placeholder="Laisser vide pour auto" value="">
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label for="numero">Numéro</label>
+            <input type="text" id="numero" name="numero" class="form-input" value="{{ ticket.numero }}" required>
+        </div>
+        <div class="form-group">
+            <label for="statut">Statut</label>
+            <select id="statut" name="statut" class="form-input">
+                <option value="disponible" {% if ticket.statut == 'disponible' %}selected{% endif %}>Disponible</option>
+                <option value="annule" {% if ticket.statut == 'annule' %}selected{% endif %}>Annulé</option>
+                <option value="perdu" {% if ticket.statut == 'perdu' %}selected{% endif %}>Perdu</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="motif">Motif</label>
+            <input type="text" id="motif" name="motif" class="form-input" value="{{ ticket.motif|default:'' }}">
+        </div>
+        {% endif %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            <a href="{% url 'tickets' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

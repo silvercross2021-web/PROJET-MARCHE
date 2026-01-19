@@ -1,0 +1,99 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Lots de Tickets - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Lots de Tickets</h1>
+    <div class="page-actions">
+        <a href="{% url 'lot_ticket_create' %}" class="btn btn-primary">+ Nouveau Lot</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="search-bar">
+        <form method="get" action="{% url 'lots_tickets' %}" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <select name="collecteur" class="form-input" style="max-width:260px;">
+                <option value="">Tous les collecteurs</option>
+                {% for c in collecteurs_filter %}
+                    <option value="{{ c.id }}" {% if filtre_collecteur == c.id|stringformat:'s' %}selected{% endif %}>{{ c.nom_complet }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{% url 'lots_tickets' %}" class="btn btn-secondary">Réinitialiser</a>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Collecteur</th>
+                <th>Date remise</th>
+                <th>Statut</th>
+                <th>Plage</th>
+                <th>Remis</th>
+                <th>Utilisés</th>
+                <th>Restants</th>
+                <th>Perdus/Annulés</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lot in lots %}
+            <tr>
+                <td>{{ lot.id }}</td>
+                <td>{{ lot.collecteur.nom_complet }}</td>
+                <td>{{ lot.date_remise|date:"Y-m-d" }}</td>
+                <td>
+                    {% if lot.statut == 'clos' %}
+                        <span class="status-badge danger">Clos</span>
+                    {% else %}
+                        <span class="status-badge success">Ouvert</span>
+                    {% endif %}
+                </td>
+                <td>{% if lot.ticket_debut and lot.ticket_fin %}{{ lot.ticket_debut }} → {{ lot.ticket_fin }}{% else %}-{% endif %}</td>
+                <td>{{ lot.nb_remis }}</td>
+                <td>{{ lot.nb_utilises }}</td>
+                <td>{{ lot.nb_restants }}</td>
+                <td>{{ lot.nb_perdus_annules }}</td>
+                <td>
+                    <div class="action-buttons" style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <a href="{% url 'lot_ticket_update' lot.id %}" class="btn-small">Modifier</a>
+                        <form method="post" action="{% url 'lot_ticket_assigner_plage' lot.id %}" style="display:inline;" onsubmit="return confirm('Assigner la plage de tickets à ce lot ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-small btn-secondary">Assigner plage</button>
+                        </form>
+                        {% if lot.statut != 'clos' %}
+                        <form method="post" action="{% url 'lot_ticket_clore' lot.id %}" style="display:inline;" onsubmit="return confirm('Clore ce lot ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-small btn-danger">Clore</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10" style="text-align: center; padding: 30px; color: var(--text-light);">
+                    Aucun lot trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj %}
+<div class="pagination" style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+    {% if page_obj.has_previous %}
+        <a class="btn-small" href="?page={{ page_obj.previous_page_number }}{% if filtre_collecteur %}&collecteur={{ filtre_collecteur }}{% endif %}">Précédent</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="btn-small" href="?page={{ page_obj.next_page_number }}{% if filtre_collecteur %}&collecteur={{ filtre_collecteur }}{% endif %}">Suivant</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

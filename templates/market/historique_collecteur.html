@@ -1,0 +1,443 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Historique - {{ collecteur.nom_complet }} | e-Marché{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Historique du Collecteur</h1>
+        <div class="breadcrumb">
+            <span>Collecteurs</span>
+            <span>›</span>
+            <span>{{ collecteur.nom_complet }}</span>
+            <span>›</span>
+            <span>Historique</span>
+        </div>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'collecteurs' %}" class="btn btn-secondary">
+            ← Retour aux collecteurs
+        </a>
+    </div>
+</div>
+
+<div class="collecteur-info-card">
+    <div class="info-header">
+        <h2>{{ collecteur.nom_complet }}</h2>
+        <span class="status-badge {% if collecteur.actif %}status-active{% else %}status-inactive{% endif %}">
+            {{ collecteur.actif|yesno:"Actif,Inactif" }}
+        </span>
+    </div>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="label">Contact:</span>
+            <span class="value">{{ collecteur.contact|default:"Non renseigné" }}</span>
+        </div>
+        <div class="info-item">
+            <span class="label">Date de création:</span>
+            <span class="value">{{ collecteur.date_creation|date:"d/m/Y" }}</span>
+        </div>
+        {% if stats_collecteur %}
+        <div class="info-item">
+            <span class="label">Total collecté:</span>
+            <span class="value">{{ stats_collecteur.total_collecte|floatformat:0 }} FCFA</span>
+        </div>
+        <div class="info-item">
+            <span class="label">Nombre de paiements:</span>
+            <span class="value">{{ stats_collecteur.total_paiements }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="filters-section">
+    <h3>Filtres</h3>
+    <form method="GET" class="filter-form">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Date de début:</label>
+                <input type="date" name="debut" value="{{ date_debut }}">
+            </div>
+            <div class="filter-group">
+                <label>Date de fin:</label>
+                <input type="date" name="fin" value="{{ date_fin }}">
+            </div>
+            <div class="filter-group">
+                <label>Année (mensuel):</label>
+                <input type="number" name="annee" value="{{ annee }}" placeholder="2024">
+            </div>
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Appliquer</button>
+                <a href="?" class="btn btn-secondary">Réinitialiser</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Actions de génération -->
+<div class="actions-section">
+    <h3>Génération de Rapports</h3>
+    <div class="action-buttons">
+        <form method="POST" action="{% url 'generer_rapport_collecteur' collecteur.id %}" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="type_rapport" value="journalier">
+            <div class="form-row">
+                <input type="date" name="date_rapport" value="{% now 'Y-m-d' %}">
+                <button type="submit" class="btn btn-success">Générer rapport journalier</button>
+            </div>
+        </form>
+        
+        <form method="POST" action="{% url 'generer_rapport_collecteur' collecteur.id %}" class="inline-form">
+            {% csrf_token %}
+            <input type="hidden" name="type_rapport" value="mensuel">
+            <div class="form-row">
+                <select name="mois">
+                    <option value="1" {% if now|date:"n" == "1" %}selected{% endif %}>Janvier</option>
+                    <option value="2" {% if now|date:"n" == "2" %}selected{% endif %}>Février</option>
+                    <option value="3" {% if now|date:"n" == "3" %}selected{% endif %}>Mars</option>
+                    <option value="4" {% if now|date:"n" == "4" %}selected{% endif %}>Avril</option>
+                    <option value="5" {% if now|date:"n" == "5" %}selected{% endif %}>Mai</option>
+                    <option value="6" {% if now|date:"n" == "6" %}selected{% endif %}>Juin</option>
+                    <option value="7" {% if now|date:"n" == "7" %}selected{% endif %}>Juillet</option>
+                    <option value="8" {% if now|date:"n" == "8" %}selected{% endif %}>Août</option>
+                    <option value="9" {% if now|date:"n" == "9" %}selected{% endif %}>Septembre</option>
+                    <option value="10" {% if now|date:"n" == "10" %}selected{% endif %}>Octobre</option>
+                    <option value="11" {% if now|date:"n" == "11" %}selected{% endif %}>Novembre</option>
+                    <option value="12" {% if now|date:"n" == "12" %}selected{% endif %}>Décembre</option>
+                </select>
+                <input type="number" name="annee" value="{% now 'Y' %}" placeholder="Année">
+                <button type="submit" class="btn btn-success">Générer rapport mensuel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rapports Journaliers -->
+<div class="reports-section">
+    <h3>Rapports Journaliers</h3>
+    {% if historique_journalier %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Tickets Remis</th>
+                    <th>Tickets Utilisés</th>
+                    <th>Tickets Perdus/Annulés</th>
+                    <th>Montant Collecté</th>
+                    <th>Nb Paiements</th>
+                    <th>Nb Commerçants</th>
+                    <th>Taux Utilisation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rapport in historique_journalier %}
+                <tr>
+                    <td>{{ rapport.date_rapport|date:"d/m/Y" }}</td>
+                    <td>{{ rapport.total_tickets_remis }}</td>
+                    <td>{{ rapport.total_tickets_utilises }}</td>
+                    <td>{{ rapport.total_tickets_perdus_annules }}</td>
+                    <td class="amount">{{ rapport.total_montant_collecte|floatformat:0 }} FCFA</td>
+                    <td>{{ rapport.nombre_paiements }}</td>
+                    <td>{{ rapport.nombre_commercants_distincts }}</td>
+                    <td>
+                        <span class="badge {% if rapport.taux_utilisation_tickets > 80 %}badge-success{% elif rapport.taux_utilisation_tickets > 50 %}badge-warning{% else %}badge-danger{% endif %}">
+                            {{ rapport.taux_utilisation_tickets }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Aucun rapport journalier trouvé pour la période spécifiée.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Rapports Mensuels -->
+<div class="reports-section">
+    <h3>Rapports Mensuels</h3>
+    {% if historique_mensuel %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Période</th>
+                    <th>Tickets Remis</th>
+                    <th>Tickets Utilisés</th>
+                    <th>Tickets Perdus/Annulés</th>
+                    <th>Montant Collecté</th>
+                    <th>Nb Paiements</th>
+                    <th>Jours Actifs</th>
+                    <th>Moyenne Journalière</th>
+                    <th>Meilleur Jour</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rapport in historique_mensuel %}
+                <tr>
+                    <td>{{ rapport.mois }}/{{ rapport.annee }}</td>
+                    <td>{{ rapport.total_tickets_remis }}</td>
+                    <td>{{ rapport.total_tickets_utilises }}</td>
+                    <td>{{ rapport.total_tickets_perdus_annules }}</td>
+                    <td class="amount">{{ rapport.total_montant_collecte|floatformat:0 }} FCFA</td>
+                    <td>{{ rapport.nombre_paiements }}</td>
+                    <td>{{ rapport.nombre_jours_actifs }}</td>
+                    <td class="amount">{{ rapport.moyenne_journaliere|floatformat:0 }} FCFA</td>
+                    <td>
+                        {% if rapport.meilleur_jour %}
+                        {{ rapport.meilleur_jour|date:"d/m" }} ({{ rapport.meilleur_jour_montant|floatformat:0 }} FCFA)
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Aucun rapport mensuel trouvé pour la période spécifiée.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.collecteur-info-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.info-header h2 {
+    margin: 0;
+    color: #2D3748;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-active {
+    background: #C6F6D5;
+    color: #22543D;
+}
+
+.status-inactive {
+    background: #FED7D7;
+    color: #742A2A;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-item .label {
+    color: #718096;
+    font-weight: 500;
+}
+
+.info-item .value {
+    color: #2D3748;
+    font-weight: 600;
+}
+
+.filters-section, .actions-section, .reports-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filters-section h3, .actions-section h3, .reports-section h3 {
+    margin: 0 0 20px 0;
+    color: #2D3748;
+}
+
+.filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-row {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #4A5568;
+    font-size: 14px;
+}
+
+.filter-group input {
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.inline-form {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+}
+
+.form-row input, .form-row select {
+    padding: 8px 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 4px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table th, .data-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.data-table th {
+    background: #F7FAFC;
+    font-weight: 600;
+    color: #4A5568;
+}
+
+.data-table .amount {
+    font-weight: 600;
+    color: #2B6CB0;
+}
+
+.badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #C6F6D5;
+    color: #22543D;
+}
+
+.badge-warning {
+    background: #FEF5E7;
+    color: #B7791F;
+}
+
+.badge-danger {
+    background: #FED7D7;
+    color: #742A2A;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #718096;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: #3182CE;
+    color: white;
+}
+
+.btn-secondary {
+    background: #E2E8F0;
+    color: #4A5568;
+}
+
+.btn-success {
+    background: #38A169;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .action-buttons {
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %}

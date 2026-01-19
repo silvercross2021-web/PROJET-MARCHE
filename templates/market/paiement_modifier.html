@@ -1,0 +1,43 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Modifier un Paiement - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Modifier un Paiement</h1>
+    <a href="{% url 'paiements' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <div class="info-box">
+        <h3>Informations du paiement</h3>
+        <p><strong>Commerçant:</strong> {{ paiement.commercant.nom_complet }}</p>
+        <p><strong>Date:</strong> {{ paiement.date_paiement|date:"d/m/Y H:i" }}</p>
+        <p><strong>Étal:</strong> {{ paiement.etal.numero|default:"-" }}</p>
+    </div>
+    
+    <form method="post" class="form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="montant">Montant (FCFA) *</label>
+            <input type="number" id="montant" name="montant" class="form-input" step="0.01" min="0.01" value="{{ paiement.montant }}" readonly required>
+        </div>
+        
+        <div class="form-group">
+            <label for="mode_paiement">Mode de paiement *</label>
+            <select id="mode_paiement" name="mode_paiement" class="form-input" required>
+                <option value="especes" {% if paiement.mode_paiement == 'especes' %}selected{% endif %}>Espèces</option>
+                <option value="mobile_money" {% if paiement.mode_paiement == 'mobile_money' %}selected{% endif %}>Mobile Money</option>
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Modifier</button>
+            <a href="{% url 'paiements' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

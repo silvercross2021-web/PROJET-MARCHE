@@ -1,0 +1,143 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Gestion des Étals - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Gestion des Étals</h1>
+    <div class="page-actions">
+        <a href="{% url 'etal_create' %}" class="btn btn-primary">+ Nouvel Étal</a>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary-cards">
+    <div class="summary-card">
+        <div class="summary-icon">🏪</div>
+        <div class="summary-value">{{ total_etals }}</div>
+        <div class="summary-label">Total Étals</div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon" style="color: var(--danger-red);">🏪</div>
+        <div class="summary-value">{{ etals_occupes }}</div>
+        <div class="summary-label">Étals Occupés</div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-icon" style="color: var(--success-green);">🏪</div>
+        <div class="summary-value">{{ etals_libres }}</div>
+        <div class="summary-label">Étals Libres</div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="filters-section">
+    <form method="get" action="{% url 'etals' %}" style="flex: 1; display: flex; gap: 10px; align-items: center;">
+        <div class="search-input-wrapper" style="flex: 1;">
+            <span class="search-icon">🔍</span>
+            <input 
+                type="text" 
+                class="search-input" 
+                name="search"
+                placeholder="Rechercher un étal..."
+                value="{{ search_query }}"
+                onkeypress="if(event.key === 'Enter') this.form.submit();"
+            >
+        </div>
+        <select name="secteur" class="form-input" style="max-width: 200px;" onchange="this.form.submit()">
+            <option value="">Tous les secteurs</option>
+            {% for s in secteurs %}
+                <option value="{{ s.id }}" {% if filtre_secteur == s.id|stringformat:'s' %}selected{% endif %}>{{ s.nom }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="statut" value="{{ filtre_statut }}">
+    </form>
+    <a href="{% url 'etals' %}?statut=tous{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_secteur %}&secteur={{ filtre_secteur }}{% endif %}" class="filter-btn {% if filtre_statut == 'tous' or not filtre_statut %}active{% endif %}">Tous</a>
+    <a href="{% url 'etals' %}?statut=libre{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_secteur %}&secteur={{ filtre_secteur }}{% endif %}" class="filter-btn {% if filtre_statut == 'libre' %}active{% endif %}">Libres</a>
+    <a href="{% url 'etals' %}?statut=occupe{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_secteur %}&secteur={{ filtre_secteur }}{% endif %}" class="filter-btn {% if filtre_statut == 'occupe' %}active{% endif %}">Occupés</a>
+</div>
+
+<!-- Table -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>N° Étal</th>
+                <th>Secteur</th>
+                <th>Superficie</th>
+                <th>Statut</th>
+                <th>Commerçant</th>
+                <th>Type Commerce</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etal in etals %}
+            <tr>
+                <td><a href="{% url 'etal_detail' etal.id %}">{{ etal.numero }}</a></td>
+                <td>{{ etal.secteur.nom }}</td>
+                <td>{{ etal.superficie }} m²</td>
+                <td>
+                    {% if etal.statut == 'occupe' %}
+                        <span class="status-badge occupied">Occupé</span>
+                    {% else %}
+                        <span class="status-badge free">Libre</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if etal.commercant %}
+                        {{ etal.commercant.nom_complet }}
+                        {% if not etal.commercant.actif %}
+                            <span class="status-badge danger" style="margin-left:6px;">Inactif</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
+                <td>{% if etal.commercant %}{{ etal.commercant.type_commerce }}{% else %}-{% endif %}</td>
+                <td>
+                    <div class="action-buttons">
+                        {% if etal.statut == 'libre' %}
+                            <a href="{% url 'etal_attribuer' etal.id %}" class="btn-small btn-primary">Attribuer</a>
+                        {% else %}
+                            <form method="post" action="{% url 'etal_liberer' etal.id %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-small btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir libérer cet étal ?')">Libérer</button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'etal_detail' etal.id %}" class="btn-small">Détails</a>
+                        <a href="{% url 'etal_update' etal.id %}" class="btn-small">Modifier</a>
+                        <form method="post" action="{% url 'etal_delete' etal.id %}" style="display: inline;" onsubmit="return confirm('Supprimer cet étal ?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-small btn-danger">Supprimer</button>
+                        </form>
+                        {% if etal.statut == 'occupe' and not etal.commercant %}
+                            <span class="status-badge danger" style="margin-left:6px;">Alerte</span>
+                        {% elif etal.commercant and etal.statut == 'libre' %}
+                            <span class="status-badge danger" style="margin-left:6px;">Alerte</span>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 30px; color: var(--text-light);">
+                    Aucun étal trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj %}
+<div class="pagination" style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+    {% if page_obj.has_previous %}
+        <a class="btn-small" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if filtre_secteur %}&secteur={{ filtre_secteur }}{% endif %}">Précédent</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="btn-small" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if filtre_statut %}&statut={{ filtre_statut }}{% endif %}{% if filtre_secteur %}&secteur={{ filtre_secteur }}{% endif %}">Suivant</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+

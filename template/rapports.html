@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapports - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html" class="active">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Rapports</h1>
+
+        <!-- Report Filters -->
+        <div class="report-filters">
+            <h2 class="card-title">Filtres de Rapport</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 14px; color: var(--text-light);">Type de Rapport</label>
+            </div>
+            <div class="report-type-options">
+                <div class="report-type-option active">Hebdomadaire</div>
+                <div class="report-type-option">Mensuel</div>
+                <div class="report-type-option">Personnalisé</div>
+            </div>
+            <button class="btn-generate">
+                <span>📄</span>
+                <span>GÉNÉRER LE RAPPORT</span>
+            </button>
+        </div>
+
+        <!-- Report Preview -->
+        <div class="report-preview">
+            <div class="report-header-actions">
+                <button class="btn-export pdf">
+                    <span>📄</span>
+                    <span>Export PDF</span>
+                </button>
+                <button class="btn-export excel">
+                    <span>📊</span>
+                    <span>Export Excel</span>
+                </button>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="stats-grid" style="margin-bottom: 30px;">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Total Collecté</div>
+                        <div class="stat-value">1.25M FCFA</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Paiements</div>
+                        <div class="stat-value">245</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <div class="stat-label">Espèces</div>
+                        <div class="stat-value">875K</div>
+                    </div>
+                </div>
+                <div class="stat-card" style="border: 2px solid var(--accent-red);">
+                    <div class="stat-content">
+                        <div class="stat-label">Retards</div>
+                        <div class="stat-value">23</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Header Info -->
+            <div class="report-header-info">
+                <div class="report-org-name">MAIRIE DE TREICHVILLE</div>
+                <div class="report-platform">e-Marché Plateforme de Gestion</div>
+                <div class="report-title">Rapport de Collecte Hebdomadaire</div>
+                <div class="report-date">Généré le: 19/11/2025</div>
+            </div>
+
+            <!-- Report Table -->
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Période</th>
+                            <th>Total Collecté</th>
+                            <th>Paiements</th>
+                            <th>Espèces</th>
+                            <th>Mobile Money</th>
+                            <th>Retards</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Semaine 44 (2025)</td>
+                            <td>1,250,000 FCFA</td>
+                            <td>245</td>
+                            <td>875,000 FCFA</td>
+                            <td>375,000 FCFA</td>
+                            <td>23</td>
+                        </tr>
+                        <tr>
+                            <td>Semaine 43 (2025)</td>
+                            <td>1,180,000 FCFA</td>
+                            <td>232</td>
+                            <td>820,000 FCFA</td>
+                            <td>360,000 FCFA</td>
+                            <td>19</td>
+                        </tr>
+                        <tr>
+                            <td>Semaine 42 (2025)</td>
+                            <td>1,320,000 FCFA</td>
+                            <td>258</td>
+                            <td>920,000 FCFA</td>
+                            <td>400,000 FCFA</td>
+                            <td>15</td>
+                        </tr>
+                        <tr style="background: var(--primary-blue); color: var(--bg-white); font-weight: 700;">
+                            <td>TOTAL</td>
+                            <td>3,750,000 FCFA</td>
+                            <td>735</td>
+                            <td>2,615,000 FCFA</td>
+                            <td>1,135,000 FCFA</td>
+                            <td>57</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Report Notes -->
+            <div class="report-notes">
+                <ul>
+                    <li>Les montants sont exprimés en Francs CFA (FCFA)</li>
+                    <li>Les données sont mises à jour en temps réel</li>
+                    <li>Les retards concernent les paiements non effectués à la date prévue</li>
+                </ul>
+            </div>
+
+            <!-- Report Signature -->
+            <div class="report-signature">
+                <div class="signature-line">
+                    <div class="signature-label">Signé par:</div>
+                    <div class="signature-field"></div>
+                </div>
+                <div class="signature-line">
+                    <div class="signature-label">Superviseur</div>
+                    <div class="signature-field"></div>
+                </div>
+                <div class="signature-line">
+                    <div class="signature-label">Responsable Administratif</div>
+                    <div class="signature-field"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

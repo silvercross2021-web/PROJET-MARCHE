@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Commerçants - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html" class="active">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Gestion des Commerçants</h1>
+
+        <div class="table-container">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Rechercher un commerçant..."
+                    >
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Contact</th>
+                        <th>Type Commerce</th>
+                        <th>N° Étal</th>
+                        <th>État Paiement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Kouassi Adjoua</td>
+                        <td>+225 07 12 34 56 78</td>
+                        <td>Fruits et Légumes</td>
+                        <td>A-045</td>
+                        <td><span class="status-badge success">À jour</span></td>
+                    </tr>
+                    <tr>
+                        <td>Bamba Seydou</td>
+                        <td>+225 05 98 76 54 32</td>
+                        <td>Poisson Frais</td>
+                        <td>B-023</td>
+                        <td><span class="status-badge danger">En retard</span></td>
+                    </tr>
+                    <tr>
+                        <td>Traoré Fatou</td>
+                        <td>+225 01 23 45 67 89</td>
+                        <td>Viande</td>
+                        <td>C-012</td>
+                        <td><span class="status-badge success">À jour</span></td>
+                    </tr>
+                    <tr>
+                        <td>Yao Marie</td>
+                        <td>+225 07 88 99 00 11</td>
+                        <td>Épices</td>
+                        <td>A-078</td>
+                        <td><span class="status-badge warning">Partiel</span></td>
+                    </tr>
+                    <tr>
+                        <td>Koné Ibrahim</td>
+                        <td>+225 05 44 55 66 77</td>
+                        <td>Textile</td>
+                        <td>D-089</td>
+                        <td><span class="status-badge success">À jour</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
+

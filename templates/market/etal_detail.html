@@ -1,0 +1,144 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Détail Étal {{ etal.numero }} - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Étal {{ etal.numero }}</h1>
+        <p class="page-subtitle">{{ etal.secteur.nom }} • {{ etal.superficie }} m²</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'etals' %}" class="btn btn-secondary">Retour</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <div class="detail-card">
+        <h2>Informations</h2>
+        <div class="detail-info">
+            <div class="info-row">
+                <span class="info-label">Statut:</span>
+                <span class="info-value">
+                    {% if etal.statut == 'occupe' %}
+                        <span class="status-badge occupied">Occupé</span>
+                    {% else %}
+                        <span class="status-badge free">Libre</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Commerçant:</span>
+                <span class="info-value">
+                    {% if etal.commercant %}
+                        {{ etal.commercant.nom_complet }}
+                        {% if not etal.commercant.actif %}
+                            <span class="status-badge danger" style="margin-left:8px;">Inactif</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date d'attribution:</span>
+                <span class="info-value">{% if etal.date_attribution %}{{ etal.date_attribution }}{% else %}-{% endif %}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <h2>Historique des attributions</h2>
+        {% if historique %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Commerçant</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in historique %}
+                    <tr>
+                        <td>{{ h.commercant.nom_complet }}</td>
+                        <td>{{ h.date_debut }}</td>
+                        <td>{% if h.date_fin %}{{ h.date_fin }}{% else %}En cours{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-light">Aucun historique.</p>
+        {% endif %}
+    </div>
+
+    <div class="detail-card">
+        <h2>Paiements liés (étal)</h2>
+        {% if paiements %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Commerçant</th>
+                        <th>Montant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in paiements %}
+                    <tr>
+                        <td>{{ p.date_paiement|date:"d/m/Y H:i" }}</td>
+                        <td>{{ p.commercant.nom_complet }}</td>
+                        <td>{{ p.montant|floatformat:0 }} FCFA</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-light">Aucun paiement.</p>
+        {% endif %}
+    </div>
+
+    <div class="detail-card">
+        <h2>Taxes journalières (60 derniers jours)</h2>
+        {% if taxes_journalieres %}
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Commerçant</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in taxes_journalieres %}
+                    <tr>
+                        <td>{{ t.date|date:"d/m/Y" }}</td>
+                        <td>{{ t.commercant.nom_complet }}</td>
+                        <td>{{ t.montant_attendu|floatformat:0 }} FCFA</td>
+                        <td>
+                            {% if t.paye %}
+                                <span class="status-badge success">Payé</span>
+                            {% elif t.en_retard %}
+                                <span class="status-badge danger">En retard</span>
+                            {% else %}
+                                <span class="status-badge warning">Dû</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+            <p class="text-light">Aucune taxe journalière.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

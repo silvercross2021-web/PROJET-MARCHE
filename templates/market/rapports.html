@@ -1,0 +1,444 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Rapports - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Rapports</h1>
+
+<!-- Report Filters -->
+<div class="report-filters">
+    <h2 class="card-title">Filtres de Rapport</h2>
+    <div style="margin-bottom: 15px;">
+        <label style="font-size: 14px; color: var(--text-light);">Type de Rapport</label>
+    </div>
+    <form method="get" action="{% url 'rapports' %}">
+        <div class="report-type-options">
+            <label style="flex: 1; cursor: pointer;">
+                <input type="radio" name="type" value="hebdomadaire" {% if type_rapport == 'hebdomadaire' %}checked{% endif %} style="display: none;" onchange="this.form.submit();">
+                <div class="report-type-option {% if type_rapport == 'hebdomadaire' %}active{% endif %}">Hebdomadaire</div>
+            </label>
+            <label style="flex: 1; cursor: pointer;">
+                <input type="radio" name="type" value="mensuel" {% if type_rapport == 'mensuel' %}checked{% endif %} style="display: none;" onchange="this.form.submit();">
+                <div class="report-type-option {% if type_rapport == 'mensuel' %}active{% endif %}">Mensuel</div>
+            </label>
+            <label style="flex: 1; cursor: pointer;">
+                <input type="radio" name="type" value="personnalise" {% if type_rapport == 'personnalise' %}checked{% endif %} style="display: none;" onchange="this.form.submit();">
+                <div class="report-type-option {% if type_rapport == 'personnalise' %}active{% endif %}">Personnalisé</div>
+            </label>
+        </div>
+    </form>
+    
+    {% if type_rapport == 'personnalise' %}
+    <form method="get" action="{% url 'rapports' %}" style="margin-top: 20px;">
+        <input type="hidden" name="type" value="personnalise">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+                <label style="font-size: 14px; color: var(--text-light); margin-bottom: 5px; display: block;">Date de début</label>
+                <input type="date" name="date_debut" value="{{ date_debut|default:'' }}" class="form-input" required>
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 14px; color: var(--text-light); margin-bottom: 5px; display: block;">Date de fin</label>
+                <input type="date" name="date_fin" value="{{ date_fin|default:'' }}" class="form-input" required>
+            </div>
+            <div style="display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary" style="height: 40px;">Générer</button>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+    
+    <button class="btn-generate" onclick="window.print();">
+        <span>📄</span>
+        <span>GÉNÉRER LE RAPPORT</span>
+    </button>
+</div>
+
+<!-- Report Preview -->
+<div class="report-preview">
+    <div class="report-header-actions">
+        <button class="btn-export pdf" onclick="window.print();">
+            <span>📄</span>
+            <span>Export PDF</span>
+        </button>
+        <a href="{% url 'rapports_export_excel' %}?type={{ type_rapport }}{% if date_debut %}&date_debut={{ date_debut }}&date_fin={{ date_fin }}{% endif %}" class="btn-export excel">
+            <span>📊</span>
+            <span>Export Excel</span>
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stats-grid" style="margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Total Collecté</div>
+                <div class="stat-value">{{ total_collecte|floatformat:1 }}M FCFA</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Paiements</div>
+                <div class="stat-value">{{ total_paiements }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Espèces</div>
+                <div class="stat-value">{{ total_especes|floatformat:0 }}K</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border: 2px solid var(--accent-red);">
+            <div class="stat-content">
+                <div class="stat-label">Retards</div>
+                <div class="stat-value">{{ total_retards }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Header Info -->
+    <div class="report-header-info">
+        <div class="report-org-name">MAIRIE DE TREICHVILLE</div>
+        <div class="report-platform">e-Marché Plateforme de Gestion</div>
+        <div class="report-title">
+            {% if type_rapport == 'hebdomadaire' %}
+                Rapport de Collecte Hebdomadaire
+            {% elif type_rapport == 'mensuel' %}
+                Rapport de Collecte Mensuelle
+            {% else %}
+                Rapport Personnalisé
+            {% endif %}
+        </div>
+        <div class="report-date">Généré le: {{ date_generation }}</div>
+    </div>
+
+    <!-- Report Table -->
+    {% if type_rapport == 'hebdomadaire' %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Période</th>
+                    <th>Total Collecté</th>
+                    <th>Paiements</th>
+                    <th>Espèces</th>
+                    <th>Mobile Money</th>
+                    <th>Moyenne/Jour</th>
+                    <th>Retards</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for semaine in semaines %}
+                <tr>
+                    <td><strong>{{ semaine.periode }}</strong></td>
+                    <td>{{ semaine.total|floatformat:0 }} FCFA</td>
+                    <td>{{ semaine.nombre }}</td>
+                    <td>{{ semaine.especes|floatformat:0 }} FCFA</td>
+                    <td>{{ semaine.mobile_money|floatformat:0 }} FCFA</td>
+                    <td>{{ semaine.moyenne_quotidienne|floatformat:0 }} FCFA</td>
+                    <td>{{ semaine.retards }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="background: var(--primary-blue); color: var(--bg-white); font-weight: 700;">
+                    <td>TOTAL</td>
+                    <td>{{ total_general|floatformat:0 }} FCFA</td>
+                    <td>{{ total_nombre }}</td>
+                    <td>{{ total_especes|floatformat:0 }} FCFA</td>
+                    <td>{{ total_mobile_money|floatformat:0 }} FCFA</td>
+                    <td>{{ moyenne_generale|floatformat:0 }} FCFA</td>
+                    <td>{{ total_retards }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% elif type_rapport == 'mensuel' %}
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Période</th>
+                    <th>Total Collecté</th>
+                    <th>Paiements</th>
+                    <th>Espèces</th>
+                    <th>Mobile Money</th>
+                    <th>Moyenne/Jour</th>
+                    <th>Retards</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mois_item in mois %}
+                <tr>
+                    <td><strong>{{ mois_item.periode }}</strong></td>
+                    <td>{{ mois_item.total|floatformat:0 }} FCFA</td>
+                    <td>{{ mois_item.nombre }}</td>
+                    <td>{{ mois_item.especes|floatformat:0 }} FCFA</td>
+                    <td>{{ mois_item.mobile_money|floatformat:0 }} FCFA</td>
+                    <td>{{ mois_item.moyenne_quotidienne|floatformat:0 }} FCFA</td>
+                    <td>{{ mois_item.retards }}</td>
+                </tr>
+                {% endfor %}
+                <tr style="background: var(--primary-blue); color: var(--bg-white); font-weight: 700;">
+                    <td>TOTAL</td>
+                    <td>{{ total_general|floatformat:0 }} FCFA</td>
+                    <td>{{ total_nombre }}</td>
+                    <td>{{ total_especes|floatformat:0 }} FCFA</td>
+                    <td>{{ total_mobile_money|floatformat:0 }} FCFA</td>
+                    <td>{{ moyenne_generale|floatformat:0 }} FCFA</td>
+                    <td>{{ total_retards }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% elif type_rapport == 'personnalise' and rapport %}
+    <!-- Statistiques principales -->
+    <div class="table-container">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">Résumé de la Période</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Période</th>
+                    <th>Total Collecté</th>
+                    <th>Nombre Paiements</th>
+                    <th>Espèces</th>
+                    <th>Mobile Money</th>
+                    <th>Moyenne/Jour</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>{{ rapport.date_debut|date:"d/m/Y" }} - {{ rapport.date_fin|date:"d/m/Y" }}</strong><br>
+                        <small style="color: var(--text-light);">({{ rapport.jours_ecoules }} jours)</small>
+                    </td>
+                    <td><strong>{{ rapport.total|floatformat:0 }} FCFA</strong></td>
+                    <td>{{ rapport.nombre }}</td>
+                    <td>{{ rapport.especes|floatformat:0 }} FCFA<br>
+                        <small style="color: var(--text-light);">({{ rapport.pourcentage_especes|floatformat:1 }}%)</small>
+                    </td>
+                    <td>{{ rapport.mobile_money|floatformat:0 }} FCFA<br>
+                        <small style="color: var(--text-light);">({{ rapport.pourcentage_mobile|floatformat:1 }}%)</small>
+                    </td>
+                    <td>{{ rapport.moyenne_quotidienne|floatformat:0 }} FCFA</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Statistiques avancées -->
+    <div class="stats-grid" style="margin-top: 30px; margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Montant Moyen</div>
+                <div class="stat-value">{{ rapport.montant_moyen|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Montant Maximum</div>
+                <div class="stat-value">{{ rapport.montant_max|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Montant Minimum</div>
+                <div class="stat-value">{{ rapport.montant_min|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+        <div class="stat-card" style="border: 2px solid var(--accent-red);">
+            <div class="stat-content">
+                <div class="stat-label">Retards</div>
+                <div class="stat-value">{{ rapport.nombre_retards }}</div>
+                <div class="stat-context">{{ rapport.total_retards|floatformat:0 }} FCFA</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paiements par Commerçant -->
+    {% if rapport.paiements_par_commercant %}
+    <div class="table-container" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">Top Commerçants ({{ rapport.paiements_par_commercant|length }})</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Rang</th>
+                    <th>Commerçant</th>
+                    <th>Total Collecté</th>
+                    <th>Nombre Paiements</th>
+                    <th>Moyenne</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rapport.paiements_par_commercant %}
+                <tr>
+                    <td><strong>#{{ forloop.counter }}</strong></td>
+                    <td>{{ item.commercant__nom }} {{ item.commercant__prenom }}</td>
+                    <td><strong>{{ item.total|floatformat:0 }} FCFA</strong></td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.moyenne|floatformat:0 }} FCFA</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <!-- Paiements par Secteur -->
+    {% if rapport.paiements_par_secteur %}
+    <div class="table-container" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">Paiements par Secteur</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Secteur</th>
+                    <th>Total Collecté</th>
+                    <th>Nombre Paiements</th>
+                    <th>Moyenne</th>
+                    <th>% du Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rapport.paiements_par_secteur %}
+                <tr>
+                    <td><strong>{{ item.etal__secteur__nom }}</strong></td>
+                    <td>{{ item.total|floatformat:0 }} FCFA</td>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.moyenne|floatformat:0 }} FCFA</td>
+                    <td>
+                        {% widthratio item.total rapport.total 100 as pourcentage %}
+                        {{ pourcentage|floatformat:1 }}%
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Paiements par Étal -->
+    {% if rapport.paiements_par_etal %}
+    <div class="table-container" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">Top Étals ({{ rapport.paiements_par_etal|length }})</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Étal</th>
+                    <th>Secteur</th>
+                    <th>Total Collecté</th>
+                    <th>Nombre Paiements</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rapport.paiements_par_etal %}
+                <tr>
+                    <td><strong>{{ item.etal__numero }}</strong></td>
+                    <td>{{ item.etal__secteur__nom }}</td>
+                    <td>{{ item.total|floatformat:0 }} FCFA</td>
+                    <td>{{ item.nombre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Paiements par Type de Commerce -->
+    {% if rapport.paiements_par_type_commerce %}
+    <div class="table-container" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--text-dark);">Paiements par Type de Commerce</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type de Commerce</th>
+                    <th>Total Collecté</th>
+                    <th>Nombre Paiements</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rapport.paiements_par_type_commerce %}
+                <tr>
+                    <td><strong>{{ item.commercant__type_commerce|default:"Non spécifié" }}</strong></td>
+                    <td>{{ item.total|floatformat:0 }} FCFA</td>
+                    <td>{{ item.nombre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Retards par Secteur -->
+    {% if rapport.retards_par_secteur %}
+    <div class="table-container" style="margin-top: 30px;">
+        <h3 style="margin-bottom: 15px; color: var(--accent-red);">Retards par Secteur</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Secteur</th>
+                    <th>Montant Attendu</th>
+                    <th>Nombre Retards</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in rapport.retards_par_secteur %}
+                <tr>
+                    <td><strong>{{ item.etal__secteur__nom }}</strong></td>
+                    <td>{{ item.total|floatformat:0 }} FCFA</td>
+                    <td>{{ item.nombre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Statistiques Tickets -->
+    <div class="stats-grid" style="margin-top: 30px; margin-bottom: 30px;">
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Paiements avec Tickets</div>
+                <div class="stat-value">{{ rapport.paiements_avec_tickets }}</div>
+                <div class="stat-context">
+                    {% widthratio rapport.paiements_avec_tickets rapport.nombre 100 as pourcentage %}
+                    {{ pourcentage|floatformat:1 }}% du total
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-label">Paiements sans Tickets</div>
+                <div class="stat-value">{{ rapport.paiements_sans_tickets }}</div>
+                <div class="stat-context">
+                    {% widthratio rapport.paiements_sans_tickets rapport.nombre 100 as pourcentage %}
+                    {{ pourcentage|floatformat:1 }}% du total
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Report Notes -->
+    <div class="report-notes">
+        <ul>
+            <li>Les montants sont exprimés en Francs CFA (FCFA)</li>
+            <li>Les données sont mises à jour en temps réel</li>
+            <li>Les retards concernent les paiements non effectués à la date prévue</li>
+        </ul>
+    </div>
+
+    <!-- Report Signature -->
+    <div class="report-signature">
+        <div class="signature-line">
+            <div class="signature-label">Signé par:</div>
+            <div class="signature-field"></div>
+        </div>
+        <div class="signature-line">
+            <div class="signature-label">Superviseur</div>
+            <div class="signature-field"></div>
+        </div>
+        <div class="signature-line">
+            <div class="signature-label">Responsable Administratif</div>
+            <div class="signature-field"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

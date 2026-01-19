@@ -1,0 +1,46 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un Collecteur - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ action }} un Collecteur</h1>
+    <a href="{% url 'collecteurs' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="nom">Nom *</label>
+            <input type="text" id="nom" name="nom" class="form-input" value="{{ collecteur.nom|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="prenom">Prénom *</label>
+            <input type="text" id="prenom" name="prenom" class="form-input" value="{{ collecteur.prenom|default:'' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="contact">Contact</label>
+            <input type="text" id="contact" name="contact" class="form-input" value="{{ collecteur.contact|default:'' }}">
+        </div>
+
+        {% if collecteur %}
+        <div class="form-group">
+            <label class="checkbox-label">
+                <input type="checkbox" name="actif" {% if collecteur.actif %}checked{% endif %}>
+                <span>Collecteur actif</span>
+            </label>
+        </div>
+        {% endif %}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            <a href="{% url 'collecteurs' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

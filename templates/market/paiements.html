@@ -1,0 +1,373 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Saisie des Paiements - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Saisie des Paiements</h1>
+
+<div class="payment-container">
+    <!-- Left Panel - New Payment Form -->
+    <div class="payment-form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="card-title" style="margin: 0;">Nouveau Paiement</h2>
+            {% if commercant_selectionne or search_merchant %}
+                <a href="{% url 'paiements' %}" class="btn-small btn-secondary" style="text-decoration: none;">
+                    🔄 Nouveau Paiement
+                </a>
+            {% endif %}
+        </div>
+
+        <form method="get" action="{% url 'paiements' %}" style="margin-bottom: 20px;">
+            <div class="form-group">
+                <label>Rechercher Commerçant</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        class="form-input" 
+                        name="search_merchant"
+                        placeholder="Nom, prénom ou N° étal du commerçant"
+                        value="{{ search_merchant }}"
+                        autofocus
+                    >
+                </div>
+            </div>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 10px;">
+                🔍 Rechercher
+            </button>
+        </form>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="alert alert-error" style="margin-bottom: 15px; padding: 12px; border-radius: 6px; background-color: #fee; color: #c33; border: 1px solid #fcc;">
+                        {{ message }}
+                    </div>
+                {% elif message.tags == 'success' %}
+                    <div class="alert alert-success" style="margin-bottom: 15px; padding: 12px; border-radius: 6px; background-color: #efe; color: #3c3; border: 1px solid #cfc;">
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info" style="margin-bottom: 15px; padding: 12px; border-radius: 6px; background-color: #eef; color: #33c; border: 1px solid #ccf;">
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        {% if search_merchant and not commercant_selectionne %}
+            <div class="alert alert-warning" style="margin-bottom: 15px; padding: 12px; border-radius: 6px; background-color: #fff3cd; color: #856404; border: 1px solid #ffc107;">
+                ⚠️ Aucun commerçant trouvé pour "{{ search_merchant }}". Vérifiez le nom, prénom ou le numéro d'étal.
+            </div>
+        {% endif %}
+
+        {% if not commercant_selectionne and not search_merchant %}
+            <div class="info-box" style="padding: 20px; text-align: center; background-color: #f8f9fa; border-radius: 6px; color: #6c757d; margin-bottom: 20px;">
+                <div style="font-size: 48px; margin-bottom: 10px;">💡</div>
+                <div style="font-weight: 500; margin-bottom: 5px;">Comment enregistrer un paiement ?</div>
+                <div style="font-size: 14px;">
+                    1. Recherchez un commerçant par son nom, prénom ou numéro d'étal<br>
+                    2. Remplissez les informations du paiement<br>
+                    3. Cliquez sur "ENREGISTRER LE PAIEMENT"
+                </div>
+            </div>
+        {% endif %}
+
+        {% if commercant_selectionne %}
+        <div class="merchant-selected">
+            <div class="merchant-name">{{ commercant_selectionne.nom_complet }}</div>
+            <div class="merchant-details">
+                {% if etals_selection %}
+                    Étals: {% for e in etals_selection %}{{ e.numero }}{% if not forloop.last %}, {% endif %}{% endfor %} | Type: {{ commercant_selectionne.type_commerce }}
+                {% else %}
+                    Type: {{ commercant_selectionne.type_commerce }}
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'paiements' %}">
+            {% csrf_token %}
+            <input type="hidden" name="commercant_id" value="{{ commercant_selectionne.id }}">
+            
+            <div class="form-group">
+                <label for="montant">Montant (FCFA)</label>
+                <input 
+                    type="number" 
+                    id="montant" 
+                    class="form-input" 
+                    value=""
+                    readonly
+                    style="padding-left: 15px;"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="date_paiement">Date et Heure</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📅</span>
+                    <input 
+                        type="datetime-local" 
+                        id="date_paiement" 
+                        name="date_paiement"
+                        class="form-input"
+                        value="{{ form_defaults.date_paiement|default:'' }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="ticket_numero">Numéro de ticket (obligatoire)</label>
+                <input
+                    type="text"
+                    id="ticket_numero"
+                    name="ticket_numero"
+                    class="form-input"
+                    value="{{ form_defaults.ticket_numero|default:'' }}"
+                    placeholder="Ex: T-000123"
+                    list="ticket_numero_list"
+                    required
+                >
+                <datalist id="ticket_numero_list"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="collecteur_id">Collecteur (obligatoire)</label>
+                <select id="collecteur_id" name="collecteur_id" class="form-input" required>
+                    <option value="">-- Sélectionner --</option>
+                    {% for col in collecteurs_filter %}
+                        <option value="{{ col.id }}" {% if form_defaults.collecteur_id == col.id|stringformat:'s' %}selected{% endif %}>{{ col.nom_complet }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="etal_id">Étal (si multiple)</label>
+                <select id="etal_id" name="etal_id" class="form-input">
+                    <option value="">-- Auto (premier étal occupé) --</option>
+                    {% for e in etals_selection %}
+                        <option value="{{ e.id }}" {% if form_defaults.etal_id == e.id|stringformat:'s' %}selected{% endif %}>{{ e.numero }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Mode de Paiement</label>
+                <div class="payment-methods">
+                    <label style="flex: 1; cursor: pointer;">
+                        <input type="radio" name="mode_paiement" value="especes" {% if not form_defaults.mode_paiement or form_defaults.mode_paiement == 'especes' %}checked{% endif %} style="display: none;" onchange="updatePaymentButtons();">
+                        <div class="payment-method-btn {% if not form_defaults.mode_paiement or form_defaults.mode_paiement == 'especes' %}active{% endif %}" id="btn-especes">
+                            <span>💵</span>
+                            <span>Espèces</span>
+                        </div>
+                    </label>
+                    <label style="flex: 1; cursor: pointer;">
+                        <input type="radio" name="mode_paiement" value="mobile_money" {% if form_defaults.mode_paiement == 'mobile_money' %}checked{% endif %} style="display: none;" onchange="updatePaymentButtons();">
+                        <div class="payment-method-btn {% if form_defaults.mode_paiement == 'mobile_money' %}active{% endif %}" id="btn-mobile">
+                            <span>📱</span>
+                            <span>Mobile Money</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-save">ENREGISTRER LE PAIEMENT</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Right Panel - Recent Payments -->
+    <div class="recent-payments-card">
+        <h2 class="card-title">Paiements Récents</h2>
+
+        <div class="search-bar">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    placeholder="Rechercher un paiement..."
+                >
+            </div>
+        </div>
+
+        <div class="payments-list">
+            {% for paiement in paiements_recents %}
+            <div class="payment-item">
+                <div class="payment-date">{{ paiement.date_paiement|date:"Y-m-d H:i" }}</div>
+                <div class="payment-ticket">
+                    {% if paiement.ticket %}
+                        Ticket: {{ paiement.ticket.numero }} | {{ paiement.get_mode_paiement_display }}
+                    {% else %}
+                        {{ paiement.get_mode_paiement_display }}
+                    {% endif %}
+                </div>
+                <div class="payment-merchant">{{ paiement.commercant.nom_complet }}</div>
+                <div class="payment-amount">{{ paiement.montant|floatformat:0 }} FCFA</div>
+                <div class="payment-actions" style="margin-top: 10px; display: flex; gap: 5px;">
+                    <a href="{% url 'paiement_reçu' paiement.id %}" class="btn-small btn-primary" target="_blank">Reçu</a>
+                    <a href="{% url 'paiement_modifier' paiement.id %}" class="btn-small btn-secondary">Modifier</a>
+                    <form method="post" action="{% url 'paiement_annuler' paiement.id %}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler ce paiement ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-small btn-danger">Annuler</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div style="padding: 30px; text-align: center; color: var(--text-light);">
+                Aucun paiement récent
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Daily Summary -->
+<div class="daily-summary">
+    <h2 class="card-title">Résumé du Jour</h2>
+    <div class="summary-grid">
+        <div class="summary-item">
+            <div class="summary-item-label">Total Collecté</div>
+            <div class="summary-item-value">{{ resume_journalier.total|floatformat:0 }} FCFA</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-item-label">Nombre de Paiements</div>
+            <div class="summary-item-value">{{ resume_journalier.nombre }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-item-label">Espèces</div>
+            <div class="summary-item-value">{{ resume_journalier.especes|floatformat:0 }} FCFA</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-item-label">Mobile Money</div>
+            <div class="summary-item-value">{{ resume_journalier.mobile_money|floatformat:0 }} FCFA</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const taxesParEtal = JSON.parse('{{ taxes_par_etal_json|escapejs }}');
+const ticketsUrlTemplate = "{% url 'tickets_disponibles_par_collecteur' 0 %}";
+
+function updateMontantAttendu() {
+    const montantInput = document.getElementById('montant');
+    const etalSelect = document.getElementById('etal_id');
+
+    if (!montantInput || !etalSelect) {
+        return;
+    }
+
+    const selectedEtalId = etalSelect.value;
+    if (selectedEtalId && taxesParEtal[selectedEtalId] !== undefined) {
+        montantInput.value = Math.round(taxesParEtal[selectedEtalId]);
+        return;
+    }
+
+    // Auto: si non sélectionné, prendre le premier de la liste (si présent)
+    const firstOption = etalSelect.querySelector('option[value]:not([value=""])');
+    if (firstOption && taxesParEtal[firstOption.value] !== undefined) {
+        montantInput.value = Math.round(taxesParEtal[firstOption.value]);
+    }
+}
+
+function updatePaymentButtons() {
+    const especesRadio = document.querySelector('input[value="especes"]');
+    const mobileRadio = document.querySelector('input[value="mobile_money"]');
+    const btnEspeces = document.getElementById('btn-especes');
+    const btnMobile = document.getElementById('btn-mobile');
+    
+    if (!especesRadio || !mobileRadio || !btnEspeces || !btnMobile) {
+        return; // Éléments non disponibles
+    }
+    
+    if (especesRadio.checked) {
+        btnEspeces.classList.add('active');
+        btnMobile.classList.remove('active');
+    } else if (mobileRadio.checked) {
+        btnMobile.classList.add('active');
+        btnEspeces.classList.remove('active');
+    }
+}
+
+// Permettre de cliquer sur les boutons pour changer la sélection
+document.addEventListener('DOMContentLoaded', function() {
+    const etalSelect = document.getElementById('etal_id');
+    if (etalSelect) {
+        etalSelect.addEventListener('change', updateMontantAttendu);
+    }
+    updateMontantAttendu();
+
+    const collecteurSelect = document.getElementById('collecteur_id');
+    const ticketInput = document.getElementById('ticket_numero');
+    const ticketDatalist = document.getElementById('ticket_numero_list');
+
+    async function loadTicketsForCollecteur(collecteurId) {
+        if (!ticketDatalist) {
+            return;
+        }
+        ticketDatalist.innerHTML = '';
+
+        if (!collecteurId) {
+            return;
+        }
+
+        const url = ticketsUrlTemplate.replace('/0/', '/' + String(collecteurId) + '/');
+        try {
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (!response.ok) {
+                return;
+            }
+            const data = await response.json();
+            const tickets = Array.isArray(data.tickets) ? data.tickets : [];
+            for (const numero of tickets) {
+                const opt = document.createElement('option');
+                opt.value = numero;
+                ticketDatalist.appendChild(opt);
+            }
+        } catch (e) {
+            return;
+        }
+    }
+
+    if (collecteurSelect) {
+        collecteurSelect.addEventListener('change', function() {
+            if (ticketInput) {
+                ticketInput.value = '';
+            }
+            loadTicketsForCollecteur(collecteurSelect.value);
+        });
+
+        if (collecteurSelect.value) {
+            loadTicketsForCollecteur(collecteurSelect.value);
+        }
+    }
+
+    const btnEspeces = document.getElementById('btn-especes');
+    const btnMobile = document.getElementById('btn-mobile');
+    
+    if (btnEspeces) {
+        btnEspeces.addEventListener('click', function() {
+            const radio = document.querySelector('input[value="especes"]');
+            if (radio) {
+                radio.checked = true;
+                updatePaymentButtons();
+            }
+        });
+    }
+    
+    if (btnMobile) {
+        btnMobile.addEventListener('click', function() {
+            const radio = document.querySelector('input[value="mobile_money"]');
+            if (radio) {
+                radio.checked = true;
+                updatePaymentButtons();
+            }
+        });
+    }
+    
+    // Initialiser les boutons au chargement
+    updatePaymentButtons();
+});
+</script>
+{% endblock %}
+

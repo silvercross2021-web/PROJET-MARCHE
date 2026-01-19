@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html" class="active">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Tableau de Bord</h1>
+
+        <!-- KPI Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon primary"></div>
+                <div class="stat-content">
+                    <div class="stat-label">Total Collecté Aujourd'hui</div>
+                    <div class="stat-value">178 000 FCFA</div>
+                    <div class="stat-trend positive">+12.5%</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon danger"></div>
+                <div class="stat-content">
+                    <div class="stat-label">Commerçants en Retard</div>
+                    <div class="stat-alert">Alerte</div>
+                    <div class="stat-value">23</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon success"></div>
+                <div class="stat-content">
+                    <div class="stat-label">Taux d'Occupation</div>
+                    <div class="stat-value">92%</div>
+                    <div class="stat-context">Sur 450</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon info"></div>
+                <div class="stat-content">
+                    <div class="stat-label">Collecte Mensuelle</div>
+                    <div class="stat-value">5.2M FCFA</div>
+                    <div class="stat-trend positive">+8.2%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3 class="chart-title">Collection Journalière</h3>
+                <div class="chart-container">
+                    <div class="chart-y-axis-bars">
+                        <span>200K</span>
+                        <span>150K</span>
+                        <span>100K</span>
+                        <span>50K</span>
+                        <span>0</span>
+                    </div>
+                    <div class="chart-bars">
+                        <div class="chart-bar" style="height: 60%;" title="120K FCFA"></div>
+                        <div class="chart-bar" style="height: 70%;" title="140K FCFA"></div>
+                        <div class="chart-bar" style="height: 55%;" title="110K FCFA"></div>
+                        <div class="chart-bar" style="height: 80%;" title="160K FCFA"></div>
+                        <div class="chart-bar" style="height: 75%;" title="150K FCFA"></div>
+                        <div class="chart-bar" style="height: 95%;" title="190K FCFA"></div>
+                        <div class="chart-bar" style="height: 40%;" title="80K FCFA"></div>
+                    </div>
+                    <div class="chart-labels">
+                        <span>Lun</span>
+                        <span>Mar</span>
+                        <span>Mer</span>
+                        <span>Jeu</span>
+                        <span>Ven</span>
+                        <span>Sam</span>
+                        <span>Dim</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <h3 class="chart-title">Évolution Mensuelle</h3>
+                <div class="chart-container">
+                    <div class="chart-line">
+                        <div class="chart-y-axis">
+                            <span>5.0M</span>
+                            <span>3.5M</span>
+                            <span>2.0M</span>
+                            <span>1.5M</span>
+                            <span>0</span>
+                        </div>
+                        <svg width="calc(100% - 40px)" height="220" style="position: absolute; top: 0; left: 40px;">
+                            <polyline
+                                points="0,180 60,160 120,150 180,140 240,120 300,130"
+                                fill="none"
+                                stroke="#E53E3E"
+                                stroke-width="3"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+                            <circle cx="0" cy="180" r="4" fill="#E53E3E"/>
+                            <circle cx="60" cy="160" r="4" fill="#E53E3E"/>
+                            <circle cx="120" cy="150" r="4" fill="#E53E3E"/>
+                            <circle cx="180" cy="140" r="4" fill="#E53E3E"/>
+                            <circle cx="240" cy="120" r="4" fill="#E53E3E"/>
+                            <circle cx="300" cy="130" r="4" fill="#E53E3E"/>
+                        </svg>
+                    </div>
+                    <div class="chart-x-axis">
+                        <span>Jan</span>
+                        <span>Fév</span>
+                        <span>Mar</span>
+                        <span>Avr</span>
+                        <span>Mai</span>
+                        <span>Jun</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticket Status -->
+        <div class="tickets-grid">
+            <div class="ticket-card">
+                <div class="ticket-value">8 450</div>
+                <div class="progress-bar">
+                    <div class="progress-fill grey" style="width: 85%;"></div>
+                </div>
+                <div class="summary-label">Tickets Utilisés</div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-value">1 550</div>
+                <div class="progress-bar">
+                    <div class="progress-fill red" style="width: 15%;"></div>
+                </div>
+                <div class="summary-label">Tickets Restants</div>
+            </div>
+
+            <div class="ticket-card">
+                <div class="ticket-value">200</div>
+                <div class="progress-bar">
+                    <div class="progress-fill blue" style="width: 100%;"></div>
+                </div>
+                <div class="summary-label">Total Carnets</div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+

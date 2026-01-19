@@ -1,0 +1,40 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Attribuer un Étal - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Attribuer l'Étal {{ etal.numero }}</h1>
+    <a href="{% url 'etals' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <div class="info-box">
+        <h3>Informations de l'étal</h3>
+        <p><strong>Secteur:</strong> {{ etal.secteur.nom }}</p>
+        <p><strong>Superficie:</strong> {{ etal.superficie }} m²</p>
+        <p><strong>Statut actuel:</strong> {{ etal.get_statut_display }}</p>
+    </div>
+    
+    <form method="post" class="form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="commercant_id">Sélectionner un commerçant *</label>
+            <select id="commercant_id" name="commercant_id" class="form-input" required>
+                <option value="">-- Sélectionner --</option>
+                {% for commerçant in commercants %}
+                <option value="{{ commerçant.id }}">{{ commerçant.nom_complet }} - {{ commerçant.type_commerce }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Attribuer l'étal</button>
+            <a href="{% url 'etals' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

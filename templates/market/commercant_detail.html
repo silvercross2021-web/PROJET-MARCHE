@@ -1,0 +1,177 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ commercant.nom_complet }} - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ commercant.nom_complet }}</h1>
+        <p class="page-subtitle">Détails du commerçant</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'commercant_update' commercant.id %}" class="btn btn-primary">Modifier</a>
+        <a href="{% url 'commercants' %}" class="btn btn-secondary">Retour</a>
+    </div>
+</div>
+
+<div class="detail-grid">
+    <!-- Informations générales -->
+    <div class="detail-card">
+        <h2>Informations Générales</h2>
+        <div class="detail-info">
+            <div class="info-row">
+                <span class="info-label">Nom:</span>
+                <span class="info-value">{{ commercant.nom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Prénom:</span>
+                <span class="info-value">{{ commercant.prenom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Contact:</span>
+                <span class="info-value">{{ commercant.contact }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Type de commerce:</span>
+                <span class="info-value">{{ commercant.type_commerce }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date d'inscription:</span>
+                <span class="info-value">{{ commercant.date_inscription|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Statut:</span>
+                <span class="info-value">
+                    {% if commercant.actif %}
+                        <span class="status-badge success">Actif</span>
+                    {% else %}
+                        <span class="status-badge error">Inactif</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="detail-card">
+        <h2>Statistiques</h2>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Total payé</span>
+                <span class="stat-value">{{ statistiques.total_paye|floatformat:0 }} FCFA</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total attendu</span>
+                <span class="stat-value">{{ statistiques.total_attendu|floatformat:0 }} FCFA</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Paiements en retard</span>
+                <span class="stat-value {% if statistiques.paiements_en_retard > 0 %}error{% endif %}">
+                    {{ statistiques.paiements_en_retard }}
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Nombre de paiements</span>
+                <span class="stat-value">{{ statistiques.nombre_paiements }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Étals occupés -->
+{% if etals %}
+<div class="detail-card">
+    <h2>Étals Occupés</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Numéro</th>
+                <th>Secteur</th>
+                <th>Superficie</th>
+                <th>Date d'attribution</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for etal in etals %}
+            <tr>
+                <td>{{ etal.numero }}</td>
+                <td>{{ etal.secteur.nom }}</td>
+                <td>{{ etal.superficie }} m²</td>
+                <td>{{ etal.date_attribution|date:"d/m/Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Historique des paiements -->
+<div class="detail-card">
+    <h2>Historique des Paiements</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Mode</th>
+                <th>Ticket</th>
+                <th>Étal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paiement in historique %}
+            <tr>
+                <td>{{ paiement.date_paiement|date:"d/m/Y H:i" }}</td>
+                <td>{{ paiement.montant|floatformat:0 }} FCFA</td>
+                <td>{{ paiement.get_mode_paiement_display }}</td>
+                <td>{{ paiement.ticket.numero|default:"-" }}</td>
+                <td>{{ paiement.etal.numero|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">Aucun paiement enregistré</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Taxes journalières -->
+<div class="detail-card">
+    <h2>Taxes Journalières (60 derniers jours)</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Étal</th>
+                <th>Montant attendu</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in taxes_journalieres %}
+            <tr>
+                <td>{{ t.date|date:"d/m/Y" }}</td>
+                <td>{{ t.etal.numero }}</td>
+                <td>{{ t.montant_attendu|floatformat:0 }} FCFA</td>
+                <td>
+                    {% if t.paye %}
+                        <span class="status-badge success">Payé</span>
+                    {% elif t.en_retard %}
+                        <span class="status-badge error">En retard</span>
+                    {% else %}
+                        <span class="status-badge warning">Dû</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">Aucune taxe journalière</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+

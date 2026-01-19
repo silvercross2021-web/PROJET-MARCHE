@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Tickets - e-Marché | Mairie de Treichville</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-title">
+            <span class="logo-icon">✕</span>
+            <span>e-Marché | Mairie de Treichville</span>
+        </div>
+        <button class="btn-logout" onclick="window.location.href='index.html'">
+            <span>→</span> Déconnexion
+        </button>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <nav>
+            <ul class="sidebar-nav">
+                <li><a href="dashboard.html">
+                    <span class="icon">📊</span>
+                    <span>Tableau de Bord</span>
+                </a></li>
+                <li><a href="commercants.html">
+                    <span class="icon">👥</span>
+                    <span>Commerçants</span>
+                </a></li>
+                <li><a href="etals.html">
+                    <span class="icon">🏪</span>
+                    <span>Gestion des Étals</span>
+                </a></li>
+                <li><a href="tickets.html" class="active">
+                    <span class="icon">🎫</span>
+                    <span>Gestion des Tickets</span>
+                </a></li>
+                <li><a href="paiements.html">
+                    <span class="icon">💰</span>
+                    <span>Saisie Paiements</span>
+                </a></li>
+                <li><a href="rapports.html">
+                    <span class="icon">📄</span>
+                    <span>Rapports</span>
+                </a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Gestion des Tickets</h1>
+
+        <div class="table-container">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Rechercher un ticket..."
+                    >
+                </div>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>N° Ticket</th>
+                        <th>Commerçant</th>
+                        <th>N° Étal</th>
+                        <th>Montant</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>T-001234</td>
+                        <td>Koffi Jean</td>
+                        <td>A-045</td>
+                        <td>8000 FCFA</td>
+                        <td>2025-11-05</td>
+                        <td><span class="status-badge success">Utilisé</span></td>
+                    </tr>
+                    <tr>
+                        <td>T-001233</td>
+                        <td>Traoré Fatou</td>
+                        <td>C-012</td>
+                        <td>8000 FCFA</td>
+                        <td>2025-11-05</td>
+                        <td><span class="status-badge success">Utilisé</span></td>
+                    </tr>
+                    <tr>
+                        <td>T-001232</td>
+                        <td>Koné Ibrahim</td>
+                        <td>D-089</td>
+                        <td>12000 FCFA</td>
+                        <td>2025-11-05</td>
+                        <td><span class="status-badge success">Utilisé</span></td>
+                    </tr>
+                    <tr>
+                        <td>T-001231</td>
+                        <td>Yao Marie</td>
+                        <td>A-078</td>
+                        <td>4500 FCFA</td>
+                        <td>2025-11-05</td>
+                        <td><span class="status-badge success">Utilisé</span></td>
+                    </tr>
+                    <tr>
+                        <td>T-001230</td>
+                        <td>Bamba Seydou</td>
+                        <td>B-023</td>
+                        <td>7500 FCFA</td>
+                        <td>2025-11-05</td>
+                        <td><span class="status-badge success">Utilisé</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
+

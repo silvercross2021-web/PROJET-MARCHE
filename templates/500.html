@@ -1,0 +1,20 @@
+{% extends "market/base.html" %}
+
+{% block title %}Erreur serveur{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 text-center">
+            <h1 class="display-1">500</h1>
+            <h2 class="mb-4">Erreur serveur</h2>
+            <p class="lead">Une erreur interne s'est produite. Notre équipe technique a été notifiée.</p>
+            <p class="text-muted">Si le problème persiste, veuillez contacter l'administrateur.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-home"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,91 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}Collecteurs - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Collecteurs</h1>
+    <div class="page-actions">
+        <a href="{% url 'collecteur_create' %}" class="btn btn-primary">+ Nouveau Collecteur</a>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="search-bar">
+        <form method="get" action="{% url 'collecteurs' %}">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input
+                    type="text"
+                    class="search-input"
+                    name="search"
+                    placeholder="Rechercher un collecteur..."
+                    value="{{ search_query }}"
+                >
+            </div>
+        </form>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Contact</th>
+                <th>Actif</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in collecteurs %}
+            <tr>
+                <td>{{ c.nom_complet }}</td>
+                <td>{{ c.contact|default:'-' }}</td>
+                <td>
+                    {% if c.actif %}
+                        <span class="status-badge success">Actif</span>
+                    {% else %}
+                        <span class="status-badge danger">Inactif</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'collecteur_update' c.id %}" class="btn btn-sm btn-warning">✏️</a>
+                        <a href="{% url 'historique_collecteur' c.id %}" class="btn btn-sm btn-info">📊</a>
+                        {% if c.actif %}
+                            <form method="POST" action="{% url 'collecteur_toggle' c.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-secondary" onclick="return confirm('Désactiver ce collecteur?')">🔒</button>
+                            </form>
+                        {% else %}
+                            <form method="POST" action="{% url 'collecteur_toggle' c.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Activer ce collecteur?')">🔓</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 30px; color: var(--text-light);">
+                    Aucun collecteur trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if page_obj %}
+<div class="pagination" style="margin-top: 15px; display: flex; gap: 8px; align-items: center;">
+    {% if page_obj.has_previous %}
+        <a class="btn-small" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Précédent</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} / {{ paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="btn-small" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">Suivant</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

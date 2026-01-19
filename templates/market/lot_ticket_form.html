@@ -1,0 +1,55 @@
+{% extends 'market/base_dashboard.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un Lot - e-Marché | Mairie de Treichville{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{{ action }} un Lot de Tickets</h1>
+    <a href="{% url 'lots_tickets' %}" class="btn btn-secondary">Retour</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="form">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="collecteur_id">Collecteur *</label>
+            <select id="collecteur_id" name="collecteur_id" class="form-input" required>
+                <option value="">-- Choisir --</option>
+                {% for c in collecteurs %}
+                    <option value="{{ c.id }}" {% if lot and lot.collecteur.id == c.id %}selected{% endif %}>{{ c.nom_complet }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="date_remise">Date remise</label>
+            <input type="date" id="date_remise" name="date_remise" class="form-input" value="{% if lot %}{{ lot.date_remise|date:'Y-m-d' }}{% endif %}">
+        </div>
+
+        <div class="form-group">
+            <label for="statut">Statut *</label>
+            <select id="statut" name="statut" class="form-input" required>
+                <option value="ouvert" {% if not lot or lot.statut == 'ouvert' %}selected{% endif %}>Ouvert</option>
+                <option value="clos" {% if lot and lot.statut == 'clos' %}selected{% endif %}>Clos</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="ticket_debut">Ticket début *</label>
+            <input type="text" id="ticket_debut" name="ticket_debut" class="form-input" value="{{ lot.ticket_debut|default:'' }}" placeholder="Ex: T-000001" required>
+        </div>
+
+        <div class="form-group">
+            <label for="ticket_fin">Ticket fin *</label>
+            <input type="text" id="ticket_fin" name="ticket_fin" class="form-input" value="{{ lot.ticket_fin|default:'' }}" placeholder="Ex: T-000200" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">{{ action }}</button>
+            <a href="{% url 'lots_tickets' %}" class="btn btn-secondary">Annuler</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

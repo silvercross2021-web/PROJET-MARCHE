@@ -1,0 +1,241 @@
+<!-- Modal: Détails du Jour -->
+<div id="modal-details-jour" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Détails de la Collecte du Jour</h2>
+            <span class="modal-close" onclick="closeModal('modal-details-jour')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-summary">
+                <div class="summary-item">
+                    <div class="summary-label">Total Collecté</div>
+                    <div class="summary-value">{{ total_aujourdhui|floatformat:0 }} FCFA</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Nombre de Paiements</div>
+                    <div class="summary-value">{{ paiements_aujourdhui|length }}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Comparaison avec Hier</div>
+                    <div class="summary-value {% if comparaison_hier.pourcentage > 0 %}positive{% else %}negative{% endif %}">
+                        {% if comparaison_hier.pourcentage > 0 %}+{% endif %}{{ comparaison_hier.pourcentage|floatformat:1 }}%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="repartition-section">
+                <h3>Répartition par Mode de Paiement</h3>
+                <div class="repartition-chart">
+                    <div class="repartition-item">
+                        <div class="repartition-label">Espèces</div>
+                        <div class="repartition-bar">
+                            <div class="repartition-fill especes" style="width: {{ repartition.especes.pourcentage|floatformat:1 }}%;"></div>
+                        </div>
+                        <div class="repartition-value">{{ repartition.especes.montant|floatformat:0 }} FCFA ({{ repartition.especes.pourcentage|floatformat:1 }}%)</div>
+                    </div>
+                    <div class="repartition-item">
+                        <div class="repartition-label">Mobile Money</div>
+                        <div class="repartition-bar">
+                            <div class="repartition-fill mobile" style="width: {{ repartition.mobile_money.pourcentage|floatformat:1 }}%;"></div>
+                        </div>
+                        <div class="repartition-value">{{ repartition.mobile_money.montant|floatformat:0 }} FCFA ({{ repartition.mobile_money.pourcentage|floatformat:1 }}%)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="paiements-list-section">
+                <h3>Paiements du Jour</h3>
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Heure</th>
+                            <th>Commerçant</th>
+                            <th>Montant</th>
+                            <th>Mode</th>
+                            <th>Ticket</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in paiements_aujourdhui %}
+                        <tr>
+                            <td>{{ paiement.date_paiement|date:"H:i" }}</td>
+                            <td>{{ paiement.commercant.nom_complet }}</td>
+                            <td>{{ paiement.montant|floatformat:0 }} FCFA</td>
+                            <td>{{ paiement.get_mode_paiement_display }}</td>
+                            <td>{{ paiement.ticket.numero|default:"-" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun paiement enregistré aujourd'hui</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-details-jour')">Fermer</button>
+            <button class="btn btn-primary" onclick="exportDayDetails()">Exporter</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Commerçants en Retard -->
+<div id="modal-commercants-retard" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Commerçants en Retard de Paiement</h2>
+            <span class="modal-close" onclick="closeModal('modal-commercants-retard')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-summary">
+                <div class="summary-item danger">
+                    <div class="summary-label">Total Commerçants en Retard</div>
+                    <div class="summary-value">{{ commercants_retard }}</div>
+                </div>
+            </div>
+            
+            {% if top_retards %}
+            <div class="retards-list-section">
+                <h3>Liste des Commerçants en Retard</h3>
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Commerçant</th>
+                            <th>Contact</th>
+                            <th>Montant Total en Retard</th>
+                            <th>Nombre de Retards</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for retard in top_retards %}
+                        <tr>
+                            <td>{{ retard.commercant.nom_complet }}</td>
+                            <td>{{ retard.commercant.contact }}</td>
+                            <td class="text-danger">{{ retard.total_retard|floatformat:0 }} FCFA</td>
+                            <td>{{ retard.nombre_retards }}</td>
+                            <td>
+                                <a href="{% url 'commercant_detail' retard.commercant.id %}" class="btn-small btn-primary">Voir</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Aucun commerçant en retard de paiement</p>
+            </div>
+            {% endif %}
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-commercants-retard')">Fermer</button>
+            <a href="{% url 'commercants' %}?filter=retard" class="btn btn-primary">Voir Tous les Commerçants</a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Évolution Mensuelle -->
+<div id="modal-evolution-mensuelle" class="modal modal-large">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Évolution Mensuelle Détaillée</h2>
+            <span class="modal-close" onclick="closeModal('modal-evolution-mensuelle')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="modal-summary">
+                <div class="summary-item">
+                    <div class="summary-label">Collecte du Mois en Cours</div>
+                    <div class="summary-value">
+                        {% if collecte_mensuelle >= 1000000 %}
+                            {{ collecte_mensuelle|floatformat:1 }}M FCFA
+                        {% else %}
+                            {{ collecte_mensuelle|floatformat:0 }}K FCFA
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Comparaison avec Mois Précédent</div>
+                    <div class="summary-value {% if comparaison_mois.pourcentage > 0 %}positive{% else %}negative{% endif %}">
+                        {% if comparaison_mois.pourcentage > 0 %}+{% endif %}{{ comparaison_mois.pourcentage|floatformat:1 }}%
+                    </div>
+                </div>
+            </div>
+            
+            <div class="evolution-table-section">
+                <h3>Détails par Mois</h3>
+                <table class="modal-table">
+                    <thead>
+                        <tr>
+                            <th>Mois</th>
+                            <th>Montant Collecté</th>
+                            <th>Évolution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mois in evolution_mensuelle.mois %}
+                        <tr>
+                            <td>{{ mois.nom_mois }} {{ mois.annee }}</td>
+                            <td>
+                                {% if mois.total >= 1000000 %}
+                                    {{ mois.total|floatformat:1 }}M FCFA
+                                {% else %}
+                                    {{ mois.total|floatformat:0 }}K FCFA
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not forloop.first %}
+                                    {% with prev_mois=evolution_mensuelle.mois|slice:forloop.counter0|first %}
+                                        {% if prev_mois.total > 0 %}
+                                            {% widthratio mois.total prev_mois.total 100 as evolution %}
+                                            {% if evolution > 100 %}
+                                                <span class="text-success">+{{ evolution|add:"-100"|floatformat:1 }}%</span>
+                                            {% else %}
+                                                <span class="text-danger">{{ evolution|add:"-100"|floatformat:1 }}%</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-success">+100%</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span>-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="statistics-section">
+                <h3>Statistiques</h3>
+                <div class="stats-grid-modal">
+                    <div class="stat-item-modal">
+                        <div class="stat-label-modal">Moyenne Mensuelle</div>
+                        <div class="stat-value-modal">
+                            {% if evolution_mensuelle.moyenne >= 1000000 %}
+                                {{ evolution_mensuelle.moyenne|floatformat:1 }}M FCFA
+                            {% else %}
+                                {{ evolution_mensuelle.moyenne|floatformat:0 }}K FCFA
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="stat-item-modal">
+                        <div class="stat-label-modal">Meilleur Mois</div>
+                        <div class="stat-value-modal">
+                            {% with meilleur=evolution_mensuelle.mois|dictsort:"total"|last %}
+                                {{ meilleur.nom_mois }} ({{ meilleur.total|floatformat:0 }}K FCFA)
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('modal-evolution-mensuelle')">Fermer</button>
+            <button class="btn btn-primary" onclick="exportMonthlyEvolution()">Exporter</button>
+        </div>
+    </div>
+</div>
+
